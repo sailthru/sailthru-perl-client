@@ -129,14 +129,20 @@ sub copyTemplate {
 		{ type => SCALAR },
 		{ type => SCALAR },
 		{ type => SCALAR },
-		{ type => SCALAR });
-	my ( $self, $template, $data_feed, $setup, $subject_line, $scedule_time, $list ) = @_;
+		{ type => SCALAR },
+		0);
+	my ( $self, $template, $data_feed, $setup, $subject_line, $scedule_time, $list, $options) = @_;
 	my %data = ( copy_template => $template,
 					 data_feed_url => $data_feed,
 					 setup => $setup,
 					 name => $subject_line,
 					 schedule_time => $scedule_time,
 					 list => $list);
+	# $self->_flatten_hash( 'options', $options, \%data ) if $options;
+	if ($options) {
+       my %merged_hash = ( %data, %{$options} );    #merge in the options hash
+       %data = %merged_hash;
+   }
 	return $self->_apiCall( 'blast', \%data, 'POST');
 }
 
