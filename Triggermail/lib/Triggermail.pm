@@ -19,7 +19,8 @@ sub new {
     my $class = shift;
     my $self  = {
         api_key => shift,
-        secret  => shift
+        secret  => shift,
+		  timeout => shift
     };
 
     return bless $self, $class;
@@ -195,6 +196,7 @@ sub _httpRequest {
 
     my ( $self, $url, $data, $method ) = @_;
     my $browser = LWP::UserAgent->new;
+	 $browser->timeout($self->{timeout}) if $self->{timeout};
     my $response;
     if ( $method eq 'POST' ) {
         $response = $browser->post( $url, $data );
@@ -274,7 +276,7 @@ Triggermail - Perl extension for SailThru's Triggermail platform
 =head1 SYNOPSIS
 
   use Triggermail;
-  my $tm = Triggermail->new('api_key','secret');
+  my $tm = Triggermail->new('api_key','secret'); #You can optionally include a timeout in seconds as a third parameter.
   %vars = ( name => "Joe Example", from_email => "approved_email@your_domain.com", your_variable => "some_value");
   %options = ( reply_to => "your reply_to header");
   $tm->send("template_name",'example@example.com',\%vars,\%options);
