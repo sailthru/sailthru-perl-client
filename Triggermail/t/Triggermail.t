@@ -1,5 +1,4 @@
 use Test::More tests => 8;
-use Data::Dump qw(dump);
 
 BEGIN { use_ok('Triggermail') };
 
