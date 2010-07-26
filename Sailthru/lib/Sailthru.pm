@@ -1,4 +1,4 @@
-package Triggermail;
+package Sailthru;
 
 our $VERSION = '0.02';
 
@@ -276,19 +276,19 @@ __END__
 
 =head1 NAME
 
-Triggermail - Perl extension for SailThru's Triggermail platform
+Sailthru - Perl module for accessing SailThru's platform
 
 =head1 SYNOPSIS
 
-  use Triggermail;
-  my $tm = Triggermail->new('api_key','secret'); #You can optionally include a timeout in seconds as a third parameter.
+  use Sailthru;
+  my $tm = Sailthru->new('api_key','secret'); #You can optionally include a timeout in seconds as a third parameter.
   %vars = ( name => "Joe Example", from_email => "approved_email@your_domain.com", your_variable => "some_value");
   %options = ( reply_to => "your reply_to header");
   $tm->send("template_name",'example@example.com',\%vars,\%options);
 
 =head1 DESCRIPTION
 
-Triggermail is a Perl module for accesing SailThru's Triggermail platform.
+Sailthru is a Perl module for accesing the Sailthru platform.
 
 All methods return a hash with return values. Dump the hash or explore the SailThru API documentation page for what might be returned.
 L<http://docs.sailthru.com/api>
@@ -352,7 +352,7 @@ Some options might change. Always consult the SailThru API documentation for the
 
 =head1 AUTHOR
 
-Sam Gerstenzang, E<lt>sgerstenzang@stanford.eduE<gt>
+Sam Gerstenzang
 
 =head1 COPYRIGHT AND LICENSE
 

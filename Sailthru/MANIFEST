@@ -2,5 +2,5 @@ Changes
 Makefile.PL
 MANIFEST
 README
-t/Triggermail.t
-lib/Triggermail.pm
+t/Sailthru.t
+lib/Sailthru.pm
