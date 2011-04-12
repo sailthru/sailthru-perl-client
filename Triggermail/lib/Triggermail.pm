@@ -282,11 +282,11 @@ Triggermail - Perl module for accessing SailThru's platform
 
 =head1 SYNOPSIS
 
-  use Triggermail;
-  my $tm = Triggermail->new('api_key','secret'); #You can optionally include a timeout in seconds as a third parameter.
-  %vars = ( name => "Joe Example", from_email => "approved_email@your_domain.com", your_variable => "some_value");
-  %options = ( reply_to => "your reply_to header");
-  $tm->send("template_name",'example@example.com',\%vars,\%options);
+ use Triggermail;
+ my $tm = Triggermail->new('api_key','secret'); # You can optionally include a timeout in seconds as a third parameter.
+ %vars = ( name => "Joe Example", from_email => "approved_email@your_domain.com", your_variable => "some_value");
+ %options = ( reply_to => "your reply_to header");
+ $tm->send("template_name",'example@example.com',\%vars,\%options);
 
 =head1 DESCRIPTION
 
@@ -301,56 +301,68 @@ Some options might change. Always consult the SailThru API documentation for the
 
 =over 4
 
-=item C<getEmail($email)>
+=item C<getEmail( $email, )>
 
-=item C<setEmail($email,\%vars,\%lists,\%templates)>
+=item C<setEmail( $email, \%vars, \%lists, \%templates )>
 
-	Takes email as string. vars, lists, templates as hash references.
-	The vars hash you choose your own key/values for later substitution.
-	The lists hash should be of format list_name => 1 for subscribed, 0 for unsubscribed.
-	The templates hash is a list of templates user has opted out, use the key as the template name to signal opt-out.
-	As always, see the Sailthru documentation for more information.
+Takes email as string. vars, lists, templates as hash references.
+The vars hash you choose your own key/values for later substitution.
+The lists hash should be of format list_name => 1 for subscribed, 0 for unsubscribed.
+The templates hash is a list of templates user has opted out, use the key as the template name to signal opt-out.
+As always, see the Sailthru documentation for more information.
 
-=item C<send($template,$email,\%vars,\%options, $schedule_time)>
+=item C<send( $template, $email, \%vars, \%options, $schedule_time )>
 
-	Send an email to a single address.
-	Takes template, email and schedule_time as strings. vars, options as hash references.
-	Options:
-	  replyto: override Reply-To header
-	  test: send as test email (subject line will be marked, will not count towards stats)
+Send an email to a single address.
+Takes template, email and schedule_time as strings. vars, options as hash references.
 
-=item C<getSend($send_id)>
+Options:
 
-	Check if send worked, using send_id returned in the hash from send()
+=over
 
-=item C<scheduleBlast($name,$list,$schedule_time,$from_name,$from_email,$subject,$content_html,$content_text,\%options)>
+=item C<replyto>
 
-	Schedule an email blast. See the API documentation for more details on what should be passed. L<http://docs.sailthru.com/api/blast>
+override Reply-To header
 
-=item C<getBlast($blast_id)>
+=item C<test>
 
-	Check if blast worked, using blast_id returned in the hash from scheduleBlast()
-	Takes blast_id.
+send as test email (subject line will be marked, will not count towards stats)
 
-=item C<copyTemplate($template_name, $data_feed, $setup, $subject_line, $scedule_time, $list)>
+=back
 
-	Allows you to use an existing template to send out a blast.
+=item C<getSend( $send_id )>
 
+Check if send worked, using send_id returned in the hash from send()
 
-=item C<getTemplate($template_name)>
-	
-	Retrieves information about the template
-	
-=item C<importContacts($email,$password)>
-	Import contacts from major providers.
-	Takes email, password as strings. By default does not include names. Pass 1 as third argument to include names.
+=item C<scheduleBlast( $name, $list, $schedule_time, $from_name, $from_email, $subject, $content_html, $content_text, \%options )>
+
+Schedule an email blast. See the API documentation for more details on what should be passed. L<http://docs.sailthru.com/api/blast>
+
+=item C<getBlast( $blast_id )>
+
+Check if blast worked, using blast_id returned in the hash from scheduleBlast()
+Takes blast_id.
+
+=item C<copyTemplate( $template_name, $data_feed, $setup, $subject_line, $scedule_time, $list )>
+
+Allows you to use an existing template to send out a blast.
+
+=item C<getTemplate( $template_name )>
+
+Retrieves information about the template
+
+=item C<importContacts( $email, $password )>
+
+Import contacts from major providers.
+Takes email, password as strings. By default does not include names. Pass 1 as third argument to include names.
 
 =back
 
 
 =head1 SEE ALSO
 
-	See the SailThru API documentation for more details on their API. L<http://docs.sailthru.com/api>
+See the SailThru API documentation for more details on their API.
+L<http://docs.sailthru.com/api>
 
 =head1 AUTHOR
 
@@ -363,6 +375,5 @@ Copyright (C) 2011 by Sam Gerstenzang
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.10.0 or,
 at your option, any later version of Perl 5 you may have available.
-
 
 =cut
