@@ -48,5 +48,3 @@ $tm = Triggermail->new('invalid_api_key','secret');
 %invalid_key = %{$tm->getEmail('not_an_email')};
 is($invalid_key{error},3,"Testing error code on invalid key");
 is($invalid_key{errormsg},"Invalid API key: invalid_api_key","Testing error message on invalid key");
-
-
