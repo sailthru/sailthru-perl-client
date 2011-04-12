@@ -19,7 +19,7 @@ sub new {
     my $self  = {
         api_key => shift,
         secret  => shift,
-		  timeout => shift
+        timeout => shift
     };
 
     return bless $self, $class;
@@ -57,7 +57,7 @@ sub send {
         { type => HASHREF },
         { type => SCALAR },
         { type => SCALAR },
-		  0,
+        0,
         0,
         0
     );
@@ -122,29 +122,29 @@ sub getBlast {
 }
 
 sub copyTemplate {
-	validate_pos(
-		@_,
-		{ type => HASHREF },
-		{ type => SCALAR },
-		{ type => SCALAR },
-		{ type => SCALAR },
-		{ type => SCALAR },
-		{ type => SCALAR },
-		{ type => SCALAR },
-		0);
-	my ( $self, $template, $data_feed, $setup, $subject_line, $scedule_time, $list, $options) = @_;
-	my %data = ( copy_template => $template,
-					 data_feed_url => $data_feed,
-					 setup => $setup,
-					 name => $subject_line,
-					 schedule_time => $scedule_time,
-					 list => $list);
-	# $self->_flatten_hash( 'options', $options, \%data ) if $options;
-	if ($options) {
-       my %merged_hash = ( %data, %{$options} );    #merge in the options hash
-       %data = %merged_hash;
-   }
-	return $self->_apiCall( 'blast', \%data, 'POST');
+    validate_pos(
+        @_,
+        { type => HASHREF },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR },
+        0);
+    my ( $self, $template, $data_feed, $setup, $subject_line, $scedule_time, $list, $options) = @_;
+    my %data = ( copy_template => $template,
+                 data_feed_url => $data_feed,
+                 setup => $setup,
+                 name => $subject_line,
+                 schedule_time => $scedule_time,
+                 list => $list);
+    # $self->_flatten_hash( 'options', $options, \%data ) if $options;
+    if ($options) {
+        my %merged_hash = ( %data, %{$options} );    #merge in the options hash
+        %data = %merged_hash;
+    }
+    return $self->_apiCall( 'blast', \%data, 'POST');
 }
 
 sub getTemplate {
@@ -186,7 +186,7 @@ sub _apiCall {
     $data->{'format'}  = 'json';
     $data->{'sig'}     = $self->_getSignatureHash($data);
     my $result = $self->_httpRequest( API_URI . "/" . $action, $data, $method );
-    
+
     my $json = JSON::XS->new->ascii->pretty->allow_nonref;
     my $decoded = $json->decode( $result->content );
     return $decoded ? $decoded : $result;
@@ -203,7 +203,7 @@ sub _httpRequest {
 
     my ( $self, $url, $data, $method ) = @_;
     my $browser = LWP::UserAgent->new;
-	 $browser->timeout($self->{timeout}) if $self->{timeout};
+    $browser->timeout($self->{timeout}) if $self->{timeout};
     my $response;
     if ( $method eq 'POST' ) {
         $response = $browser->post( $url, $data );
