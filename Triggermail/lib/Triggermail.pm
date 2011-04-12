@@ -15,262 +15,219 @@ use URI::Escape;
 use Params::Validate qw(:all);
 
 sub new {
-    my $class = shift;
-    my $self  = {
-        api_key => shift,
-        secret  => shift,
-        timeout => shift
-    };
+	my $class = shift;
+	my $self  = {
+		api_key => shift,
+		secret  => shift,
+		timeout => shift
+	};
 
-    return bless $self, $class;
+	return bless $self, $class;
 }
 
 sub getEmail {
-    validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
-    my ( $self, $email ) = @_;
-    my %data = ( email => $email );
-    return $self->_apiCall( 'email', \%data, 'GET' );
+	validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
+	my ( $self, $email ) = @_;
+	my %data = ( email => $email );
+	return $self->_apiCall( 'email', \%data, 'GET' );
 }
 
 sub setEmail {
-    validate_pos(
-        @_,
-        { type => HASHREF },
-        { type => SCALAR },
-        0,
-        0,
-        0
-    );
-    my ( $self, $email, $vars_ref, $lists_ref, $templates_ref ) = @_;
-    my %data;
-    $data{'email'} = $email;
-    $self->_flatten_hash( 'vars',  $vars_ref,  \%data ) if $vars_ref;
-    $self->_flatten_hash( 'lists', $lists_ref, \%data ) if $lists_ref;
-    $self->_flatten_hash( 'templates', $templates_ref, \%data )
-      if $templates_ref;
-    return $self->_apiCall( 'email', \%data, 'POST' );
+	validate_pos( @_, { type => HASHREF }, { type => SCALAR }, 0, 0, 0 );
+	my ( $self, $email, $vars_ref, $lists_ref, $templates_ref ) = @_;
+	my %data;
+	$data{'email'} = $email;
+	$self->_flatten_hash( 'vars',  $vars_ref,  \%data ) if $vars_ref;
+	$self->_flatten_hash( 'lists', $lists_ref, \%data ) if $lists_ref;
+	$self->_flatten_hash( 'templates', $templates_ref, \%data )
+	  if $templates_ref;
+	return $self->_apiCall( 'email', \%data, 'POST' );
 }
 
 sub send {
-    validate_pos(
-        @_,
-        { type => HASHREF },
-        { type => SCALAR },
-        { type => SCALAR },
-        0,
-        0,
-        0
-    );
-    my %data;
-    my ( $self, $template, $email, $vars_hash, $options_hash, $schedule_time ) = @_;
-    $data{'template'} = $template;
-    $data{'email'}    = $email;
-    $data{'schedule_time'} = $schedule_time;
-    $self->_flatten_hash( 'vars',    $vars_hash,    \%data ) if $vars_hash;
-    $self->_flatten_hash( 'options', $options_hash, \%data ) if $options_hash;
-    return $self->_apiCall( 'send', \%data, 'POST' );
+	validate_pos( @_, { type => HASHREF }, { type => SCALAR }, { type => SCALAR }, 0, 0, 0 );
+	my %data;
+	my ( $self, $template, $email, $vars_hash, $options_hash, $schedule_time ) = @_;
+	$data{'template'}      = $template;
+	$data{'email'}         = $email;
+	$data{'schedule_time'} = $schedule_time;
+	$self->_flatten_hash( 'vars',    $vars_hash,    \%data ) if $vars_hash;
+	$self->_flatten_hash( 'options', $options_hash, \%data ) if $options_hash;
+	return $self->_apiCall( 'send', \%data, 'POST' );
 }
 
 sub getSend {
-    validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
-    my ( $self, $send_id ) = @_;
-    my %data = ( send_id => $send_id );
-    return $self->_apiCall( 'send', \%data, 'GET' );
+	validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
+	my ( $self, $send_id ) = @_;
+	my %data = ( send_id => $send_id );
+	return $self->_apiCall( 'send', \%data, 'GET' );
 }
 
 sub scheduleBlast {
-    validate_pos(
-        @_,
-        { type => HASHREF },
-        { type => SCALAR },
-        { type => SCALAR },
-        { type => SCALAR },
-        { type => SCALAR },
-        { type => SCALAR },
-        { type => SCALAR },
-        { type => SCALAR },
-        { type => SCALAR },
-        0
-    );
-    my (
-        $self,         $name,       $list,    $schedule_time,
-        $from_name,    $from_email, $subject, $content_html,
-        $content_text, $options
-    ) = @_;
-    my %data = (
-        name          => $name,
-        list          => $list,
-        schedule_time => $schedule_time,
-        from_name     => $from_name,
-        from_email    => $from_email,
-        subject       => $subject,
-        content_html  => $content_html,
-        content_text  => $content_text
-    );
-    if ($options) {
-        my %merged_hash = ( %data, %{$options} );    #merge in the options hash
-        %data = %merged_hash;
-    }
-    return $self->_apiCall( 'blast', \%data, 'POST' );
+	validate_pos(
+		@_,
+		{ type => HASHREF },
+		{ type => SCALAR },
+		{ type => SCALAR },
+		{ type => SCALAR },
+		{ type => SCALAR },
+		{ type => SCALAR },
+		{ type => SCALAR },
+		{ type => SCALAR },
+		{ type => SCALAR },
+		0
+	);
+	my ( $self, $name, $list, $schedule_time, $from_name, $from_email, $subject, $content_html, $content_text,
+		$options ) = @_;
+	my %data = (
+		name          => $name,
+		list          => $list,
+		schedule_time => $schedule_time,
+		from_name     => $from_name,
+		from_email    => $from_email,
+		subject       => $subject,
+		content_html  => $content_html,
+		content_text  => $content_text
+	);
+	if ($options) {
+		my %merged_hash = ( %data, %{$options} );    #merge in the options hash
+		%data = %merged_hash;
+	}
+	return $self->_apiCall( 'blast', \%data, 'POST' );
 }
 
 sub getBlast {
-    validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
-    my ( $self, $blast_id ) = @_;
-    my %data = ( blast_id => $blast_id );
-    return $self->_apiCall( 'blast', \%data, 'GET' );
+	validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
+	my ( $self, $blast_id ) = @_;
+	my %data = ( blast_id => $blast_id );
+	return $self->_apiCall( 'blast', \%data, 'GET' );
 }
 
 sub copyTemplate {
-    validate_pos(
-        @_,
-        { type => HASHREF },
-        { type => SCALAR },
-        { type => SCALAR },
-        { type => SCALAR },
-        { type => SCALAR },
-        { type => SCALAR },
-        { type => SCALAR },
-        0);
-    my ( $self, $template, $data_feed, $setup, $subject_line, $schedule_time, $list, $options) = @_;
-    my %data = ( copy_template => $template,
-                 data_feed_url => $data_feed,
-                 setup => $setup,
-                 name => $subject_line,
-                 schedule_time => $schedule_time,
-                 list => $list);
-    # $self->_flatten_hash( 'options', $options, \%data ) if $options;
-    if ($options) {
-        my %merged_hash = ( %data, %{$options} );    #merge in the options hash
-        %data = %merged_hash;
-    }
-    return $self->_apiCall( 'blast', \%data, 'POST');
+	validate_pos(
+		@_,
+		{ type => HASHREF },
+		{ type => SCALAR },
+		{ type => SCALAR },
+		{ type => SCALAR },
+		{ type => SCALAR },
+		{ type => SCALAR },
+		{ type => SCALAR },
+		0
+	);
+	my ( $self, $template, $data_feed, $setup, $subject_line, $schedule_time, $list, $options ) = @_;
+	my %data = (
+		copy_template => $template,
+		data_feed_url => $data_feed,
+		setup         => $setup,
+		name          => $subject_line,
+		schedule_time => $schedule_time,
+		list          => $list
+	);
+
+	# $self->_flatten_hash( 'options', $options, \%data ) if $options;
+	if ($options) {
+		my %merged_hash = ( %data, %{$options} );    #merge in the options hash
+		%data = %merged_hash;
+	}
+	return $self->_apiCall( 'blast', \%data, 'POST' );
 }
 
 sub getTemplate {
-    validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
-    my ( $self, $template ) = @_;
-    my %data = ( template => $template );
-    return $self->_apiCall( 'template', \%data, 'GET' );
+	validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
+	my ( $self, $template ) = @_;
+	my %data = ( template => $template );
+	return $self->_apiCall( 'template', \%data, 'GET' );
 }
 
 sub importContacts {
-    validate_pos(
-        @_,
-        { type => HASHREF },
-        { type => SCALAR },
-        0
-    );
-    my ( $self, $email, $password, $include_names ) = @_;
-    $include_names = 0 if ( !$include_names );
-    my %data = (
-        email         => $email,
-        password      => $password,
-        include_names => $include_names
-    );
-    return $self->_apiCall( 'contacts', \%data, 'POST' );
+	validate_pos( @_, { type => HASHREF }, { type => SCALAR }, 0 );
+	my ( $self, $email, $password, $include_names ) = @_;
+	$include_names = 0 if ( !$include_names );
+	my %data = (
+		email         => $email,
+		password      => $password,
+		include_names => $include_names
+	);
+	return $self->_apiCall( 'contacts', \%data, 'POST' );
 }
 
 sub _apiCall {
-    validate_pos(
-        @_,
-        { type => HASHREF },
-        { type => SCALAR },
-        { type => HASHREF },
-        { type => SCALAR }
-    );
+	validate_pos( @_, { type => HASHREF }, { type => SCALAR }, { type => HASHREF }, { type => SCALAR } );
 
-    my ( $self, $action, $data, $method ) = @_;
+	my ( $self, $action, $data, $method ) = @_;
 
-    $data->{'api_key'} = $self->{api_key};
-    $data->{'format'}  = 'json';
-    $data->{'sig'}     = $self->_getSignatureHash($data);
-    my $result = $self->_httpRequest( API_URI . "/" . $action, $data, $method );
+	$data->{'api_key'} = $self->{api_key};
+	$data->{'format'}  = 'json';
+	$data->{'sig'}     = $self->_getSignatureHash($data);
+	my $result = $self->_httpRequest( API_URI . "/" . $action, $data, $method );
 
-    my $json = JSON::XS->new->ascii->pretty->allow_nonref;
-    my $decoded = $json->decode( $result->content );
-    return $decoded ? $decoded : $result;
+	my $json    = JSON::XS->new->ascii->pretty->allow_nonref;
+	my $decoded = $json->decode( $result->content );
+	return $decoded ? $decoded : $result;
 }
 
 sub _httpRequest {
-    validate_pos(
-        @_,
-        { type => HASHREF },
-        { type => SCALAR },
-        { type => HASHREF },
-        { type => SCALAR }
-    );
+	validate_pos( @_, { type => HASHREF }, { type => SCALAR }, { type => HASHREF }, { type => SCALAR } );
 
-    my ( $self, $url, $data, $method ) = @_;
-    my $browser = LWP::UserAgent->new;
-    $browser->timeout($self->{timeout}) if $self->{timeout};
-    my $response;
-    if ( $method eq 'POST' ) {
-        $response = $browser->post( $url, $data );
-    }
-    else {    #GET
-        use URI;
-        $url = URI->new($url);
-        $url->query_form( %{$data} );
-        $response = $browser->get($url);
-    }
+	my ( $self, $url, $data, $method ) = @_;
+	my $browser = LWP::UserAgent->new;
+	$browser->timeout( $self->{timeout} ) if $self->{timeout};
+	my $response;
+	if ( $method eq 'POST' ) {
+		$response = $browser->post( $url, $data );
+	}
+	else {    #GET
+		use URI;
+		$url = URI->new($url);
+		$url->query_form( %{$data} );
+		$response = $browser->get($url);
+	}
 
-    die "$url error: ", $response->status_line
-      unless $response->is_success;
+	die "$url error: ", $response->status_line
+	  unless $response->is_success;
 
-    if ($response) {
-        return $response;
-    }
+	if ($response) {
+		return $response;
+	}
 }
 
 sub _getSignatureHash {
-    validate_pos( @_, { type => HASHREF }, { type => HASHREF } );
+	validate_pos( @_, { type => HASHREF }, { type => HASHREF } );
 
-    my ( $self, $params ) = @_;
-    my @values;
-    $self->_extractValues( $params, \@values );
-    @values = sort @values;
-    my $string = $self->{secret} . join( '', @values );
-    return md5_hex($string);
+	my ( $self, $params ) = @_;
+	my @values;
+	$self->_extractValues( $params, \@values );
+	@values = sort @values;
+	my $string = $self->{secret} . join( '', @values );
+	return md5_hex($string);
 }
 
 sub _flatten_hash {
-    validate_pos(
-        @_,
-        { type => HASHREF },
-        { type => SCALAR },
-        { type => HASHREF },
-        { type => HASHREF }
-    );
-    my ( $self, $name, $nested_hash, $mother_hash ) = @_;
-    while ( ( my $key, my $value ) = each %{$nested_hash} ) {
-        if (   ref( $nested_hash->{$key} ) eq 'HASH'
-            || ref( $nested_hash->{$key} ) eq 'REF' )
-        {
-            $self->_flatten_hash( $key, $nested_hash->{$key}, $mother_hash );
-        }
-        else {
-            $mother_hash->{ $name . "[" . $key . "]" } = $value;
-        }
-    }
+	validate_pos( @_, { type => HASHREF }, { type => SCALAR }, { type => HASHREF }, { type => HASHREF } );
+	my ( $self, $name, $nested_hash, $mother_hash ) = @_;
+	while ( ( my $key, my $value ) = each %{$nested_hash} ) {
+		if (   ref( $nested_hash->{$key} ) eq 'HASH'
+			|| ref( $nested_hash->{$key} ) eq 'REF' ) {
+			$self->_flatten_hash( $key, $nested_hash->{$key}, $mother_hash );
+		}
+		else {
+			$mother_hash->{ $name . "[" . $key . "]" } = $value;
+		}
+	}
 }
 
 sub _extractValues {
-    validate_pos(
-        @_,
-        { type => HASHREF },
-        { type => HASHREF },
-        { type => ARRAYREF }
-    );
-    my ( $self, $hash, $array ) = @_;
-    while ( ( my $key, my $value ) = each %{$hash} ) {
-        if ( ref($value) eq 'HASH' || ref($value) eq 'REF' ) {
-            $self->_extractValues( $value, $array );
-        }
-        else {
-            push @{$array}, $value;
-        }
-    }
+	validate_pos( @_, { type => HASHREF }, { type => HASHREF }, { type => ARRAYREF } );
+	my ( $self, $hash, $array ) = @_;
+	while ( ( my $key, my $value ) = each %{$hash} ) {
+		if ( ref($value) eq 'HASH' || ref($value) eq 'REF' ) {
+			$self->_extractValues( $value, $array );
+		}
+		else {
+			push @{$array}, $value;
+		}
+	}
 }
 
 1;
