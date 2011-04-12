@@ -2,5 +2,6 @@ Changes
 Makefile.PL
 MANIFEST
 README
-t/Sailthru.t
-lib/Sailthru.pm
+t/Triggermail.t
+lib/Triggermail.pm
+META.yml                                 Module meta-data (added by MakeMaker)

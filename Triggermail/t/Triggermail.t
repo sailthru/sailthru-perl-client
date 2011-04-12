@@ -1,6 +1,6 @@
 use Test::More tests => 8;
 
-BEGIN { use_ok('Sailthru') };
+BEGIN { use_ok('Triggermail') };
 
 
 ##################################################
@@ -8,7 +8,7 @@ BEGIN { use_ok('Sailthru') };
 # create the Sailthru object
 #
 
-my $tm = Sailthru->new('api_key','secret');
+my $tm = Triggermail->new('api_key','secret');
 
 
 ##################################################
@@ -34,7 +34,7 @@ is($invalid_key{errormsg},"Invalid email: not_an_email","Testing error message o
 #
 # Testing invalid authorization
 #
-$tm = Sailthru->new('api_key','invalid_secret');
+$tm = Triggermail->new('api_key','invalid_secret');
 %invalid_key = %{$tm->getEmail('not_an_email')};
 is($invalid_key{error},5,"Testing authetication failing error code");
 is($invalid_key{errormsg},"Authentication failed","Testing authentication failing message");
@@ -44,7 +44,7 @@ is($invalid_key{errormsg},"Authentication failed","Testing authentication failin
 #
 # Testing invalid key response
 #
-$tm = Sailthru->new('invalid_api_key','secret');
+$tm = Triggermail->new('invalid_api_key','secret');
 %invalid_key = %{$tm->getEmail('not_an_email')};
 is($invalid_key{error},3,"Testing error code on invalid key");
 is($invalid_key{errormsg},"Invalid API key: invalid_api_key","Testing error message on invalid key");
