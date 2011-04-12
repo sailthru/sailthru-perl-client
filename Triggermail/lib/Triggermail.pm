@@ -250,6 +250,7 @@ Triggermail - Perl module for accessing SailThru's platform
 Triggermail is a Perl module for accesing the Sailthru platform.
 
 All methods return a hash with return values. Dump the hash or explore the SailThru API documentation page for what might be returned.
+
 L<http://docs.sailthru.com/api>
 
 Some options might change. Always consult the SailThru API documentation for the best information.
@@ -293,7 +294,9 @@ Check if send worked, using send_id returned in the hash from send()
 
 =item C<scheduleBlast( $name, $list, $schedule_time, $from_name, $from_email, $subject, $content_html, $content_text, \%options )>
 
-Schedule an email blast. See the API documentation for more details on what should be passed. L<http://docs.sailthru.com/api/blast>
+Schedule an email blast. See the API documentation for more details on what should be passed.
+
+L<http://docs.sailthru.com/api/blast>
 
 =item C<getBlast( $blast_id )>
 
@@ -319,6 +322,7 @@ Takes email, password as strings. By default does not include names. Pass 1 as t
 =head1 SEE ALSO
 
 See the SailThru API documentation for more details on their API.
+
 L<http://docs.sailthru.com/api>
 
 =head1 AUTHOR
