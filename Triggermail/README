@@ -21,7 +21,7 @@ HTTP::Request;
 URI::Escape;
 Params::Validate;
 
-COPYRIGHT AND LICENCE
+COPYRIGHT AND LICENSE
 
 Copyright (C) 2011 by Sam Gerstenzang
 
