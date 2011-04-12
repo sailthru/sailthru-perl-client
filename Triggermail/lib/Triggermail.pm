@@ -132,12 +132,12 @@ sub copyTemplate {
         { type => SCALAR },
         { type => SCALAR },
         0);
-    my ( $self, $template, $data_feed, $setup, $subject_line, $scedule_time, $list, $options) = @_;
+    my ( $self, $template, $data_feed, $setup, $subject_line, $schedule_time, $list, $options) = @_;
     my %data = ( copy_template => $template,
                  data_feed_url => $data_feed,
                  setup => $setup,
                  name => $subject_line,
-                 schedule_time => $scedule_time,
+                 schedule_time => $schedule_time,
                  list => $list);
     # $self->_flatten_hash( 'options', $options, \%data ) if $options;
     if ($options) {
@@ -343,7 +343,7 @@ Schedule an email blast. See the API documentation for more details on what shou
 Check if blast worked, using blast_id returned in the hash from scheduleBlast()
 Takes blast_id.
 
-=item C<copyTemplate( $template_name, $data_feed, $setup, $subject_line, $scedule_time, $list )>
+=item C<copyTemplate( $template_name, $data_feed, $setup, $subject_line, $schedule_time, $list )>
 
 Allows you to use an existing template to send out a blast.
 
