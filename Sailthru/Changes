@@ -1,9 +1,0 @@
-Revision history for Perl extension Sailthru.
-
-0.02 Fri Jul  9 15:57:26 2010
-	-made checking more lenient, added copyTemplate
-
-0.01  Thu Jul  1 11:57:26 2010
-	- original version; created by h2xs 1.23 with options
-		-XA -n Sailthru
-

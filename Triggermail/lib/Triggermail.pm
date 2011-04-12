@@ -1,6 +1,6 @@
-package Sailthru;
+package Triggermail;
 
-our $VERSION = '0.02';
+our $VERSION = '1.00';
 
 use strict;
 use warnings;
@@ -57,13 +57,15 @@ sub send {
         { type => HASHREF },
         { type => SCALAR },
         { type => SCALAR },
+		  0,
         0,
         0
     );
     my %data;
-    my ( $self, $template, $email, $vars_hash, $options_hash ) = @_;
+    my ( $self, $template, $email, $vars_hash, $options_hash, $schedule_time ) = @_;
     $data{'template'} = $template;
     $data{'email'}    = $email;
+    $data{'schedule_time'} = $schedule_time;
     $self->_flatten_hash( 'vars',    $vars_hash,    \%data ) if $vars_hash;
     $self->_flatten_hash( 'options', $options_hash, \%data ) if $options_hash;
     return $self->_apiCall( 'send', \%data, 'POST' );
@@ -276,19 +278,19 @@ __END__
 
 =head1 NAME
 
-Sailthru - Perl module for accessing SailThru's platform
+Triggermail - Perl module for accessing SailThru's platform
 
 =head1 SYNOPSIS
 
-  use Sailthru;
-  my $tm = Sailthru->new('api_key','secret'); #You can optionally include a timeout in seconds as a third parameter.
+  use Triggermail;
+  my $tm = Triggermail->new('api_key','secret'); #You can optionally include a timeout in seconds as a third parameter.
   %vars = ( name => "Joe Example", from_email => "approved_email@your_domain.com", your_variable => "some_value");
   %options = ( reply_to => "your reply_to header");
   $tm->send("template_name",'example@example.com',\%vars,\%options);
 
 =head1 DESCRIPTION
 
-Sailthru is a Perl module for accesing the Sailthru platform.
+Triggermail is a Perl module for accesing the Sailthru platform.
 
 All methods return a hash with return values. Dump the hash or explore the SailThru API documentation page for what might be returned.
 L<http://docs.sailthru.com/api>
@@ -309,10 +311,10 @@ Some options might change. Always consult the SailThru API documentation for the
 	The templates hash is a list of templates user has opted out, use the key as the template name to signal opt-out.
 	As always, see the Sailthru documentation for more information.
 
-=item C<send($template,$email,\%vars,\%options)>
+=item C<send($template,$email,\%vars,\%options, $schedule_time)>
 
 	Send an email to a single address.
-	Takes template, email as strings. vars, options as hash references.
+	Takes template, email and schedule_time as strings. vars, options as hash references.
 	Options:
 	  replyto: override Reply-To header
 	  test: send as test email (subject line will be marked, will not count towards stats)
@@ -356,7 +358,7 @@ Sam Gerstenzang
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2010 by Sam Gerstenzang
+Copyright (C) 2011 by Sam Gerstenzang
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.10.0 or,
