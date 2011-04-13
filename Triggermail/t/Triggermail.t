@@ -6,14 +6,12 @@ BEGIN { use_ok('Triggermail') }
 #
 # create the Sailthru object
 #
-
 my $tm = Triggermail->new( 'api_key', 'secret' );
 
 ##################################################
 #
 # Signature hash generation invalid key response
 #
-
 my %vars = ( var1 => "var_content", );
 my $signature = $tm->_getSignatureHash( \%vars );
 is( $signature, "27a0c810cdd561a69de9ca9bae1f3d82", "Testing signature hash generation" );
