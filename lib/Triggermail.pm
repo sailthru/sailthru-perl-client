@@ -19,7 +19,7 @@ sub new {
 	my $self  = {
 		api_key => shift,
 		secret  => shift,
-		timeout => shift
+		timeout => shift,
 	};
 
 	return bless $self, $class;
@@ -122,7 +122,7 @@ sub copyTemplate {
 		setup         => $setup,
 		name          => $subject_line,
 		schedule_time => $schedule_time,
-		list          => $list
+		list          => $list,
 	);
 
 	# $self->_flatten_hash( 'options', $options, \%data ) if $options;
