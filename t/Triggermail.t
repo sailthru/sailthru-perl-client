@@ -42,7 +42,6 @@ SKIP: {
 	my $tm = Triggermail->new( $api_key, 'invalid_secret' );
 	%invalid_key = %{ $tm->getEmail('not_an_email') };
 	is( $invalid_key{error}, 5, "Testing authentication failing error code" );
-	#is( $invalid_key{errormsg}, "Authentication failed", "Testing authentication failing message" );
 }
 
 ##################################################
@@ -51,5 +50,3 @@ SKIP: {
 #
 %invalid_key = %{ $fake_tm->getEmail('not_an_email') };
 is( $invalid_key{error}, 3, "Testing error code on invalid key" );
-
-#is( $invalid_key{errormsg}, "Invalid API key: invalid_api_key", "Testing error message on invalid key" );
