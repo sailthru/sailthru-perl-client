@@ -184,8 +184,9 @@ sub _httpRequest {
 		$response = $browser->get($url);
 	}
 
-	die "$url error: ", $response->status_line
-	  unless $response->is_success;
+# don't die on based on status code: other sailthru clients don't
+#    die "$url error: ", $response->status_line
+#      unless $response->is_success;
 
 	if ($response) {
 		return $response;

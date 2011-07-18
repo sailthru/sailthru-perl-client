@@ -23,7 +23,7 @@ is( $signature, "27a0c810cdd561a69de9ca9bae1f3d82", "Testing signature hash gene
 # Testing invalid email
 #
 SKIP: {
-	skip "requires an API key and secret.", 2
+	skip "requires an API key and secret.", 1
 	  unless defined($api_key)
 		  and defined($secret);
 	my $tm = Triggermail->new( $api_key, $secret );
@@ -43,9 +43,9 @@ SKIP: {
 	is( $invalid_key{error}, 5, "Testing authentication failing error code" );
 }
 
-##################################################
-#
-# Testing invalid key response
-#
+###################################################
+##
+## Testing invalid key response
+##
 %invalid_key = %{ $fake_tm->getEmail('not_an_email') };
 is( $invalid_key{error}, 3, "Testing error code on invalid key" );
