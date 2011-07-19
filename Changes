@@ -1,11 +1,17 @@
 Revision history for Perl extension Triggermail.
 
+1.002 Mon Jul 18 14:52:12 2011
+	- Bugfix: don't die when receiving non-200 status code response from Sailthru API.
+
+1.001 Wed Apr 27 13:15:38 2011
+	- Fixed tests to take API key and secret as environment variables.
+
 1.00 Fri Mar  4 15:57:26 2011
-	-Patch added by David Yee from 20x200. Now supports schedule_time in send method.
+	- Patch added by David Yee from 20x200. Now supports schedule_time in send method.
 
 0.02 Fri Jul  9 15:57:26 2010
-	-made checking more lenient, added copyTemplate
+	- Made checking more lenient, added copyTemplate.
 
-0.01  Thu Jul  1 11:57:26 2010
+0.01 Thu Jul  1 11:57:26 2010
 	- original version; created by h2xs 1.23 with options
 		-XA -n Sailthru
