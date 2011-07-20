@@ -40,6 +40,7 @@
 \.tmp$
 \.#
 \.rej$
+\.swp$
 
 # Avoid OS-specific files/dirs
 # Mac OSX metadata
@@ -50,7 +51,12 @@
 # Avoid Devel::Cover files.
 \bcover_db\b
 
+# Avoid JUnit XML files.
+\bjunit_output.xml$
+
 ^MANIFEST\.SKIP
 # Avoid archives of this distribution
 \bTriggermail-[\d\.\_]+
-\.swp$
+
+# Avoid MYMETA.yml
+\bMYMETA.yml$

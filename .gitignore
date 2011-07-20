@@ -1,12 +1,11 @@
+MANIFEST.SKIP.bak
+MANIFEST.bak
+META.yml
+MYMETA.yml
 Makefile
 Makefile.old
-MANIFEST.bak
-MANIFEST.SKIP.bak
 blib/
 pm_to_blib
 Triggermail-*
-*.tar.gz
-*,v
-MYMETA.yml
-*junit_output.xml
 cover_db
+*junit_output.xml
