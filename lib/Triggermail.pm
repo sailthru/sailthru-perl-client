@@ -5,7 +5,7 @@ our $VERSION = '1.002';
 use strict;
 use warnings;
 
-use constant API_URI => 'http://api.sailthru.com';
+use constant API_URI => 'https://api.sailthru.com';
 
 use Digest::MD5 qw(md5_hex);
 use JSON::XS;
