@@ -14,12 +14,13 @@ DEPENDENCIES
 
 This module requires these other modules and libraries:
 
-Digest::MD5;
-JSON::XS;
-LWP;
-HTTP::Request;
-URI::Escape;
-Params::Validate;
+Digest::MD5
+HTTP::Request
+JSON::XS
+LWP
+LWP::Protocol::https
+Params::Validate
+URI::Escape
 
 COPYRIGHT AND LICENSE
 
