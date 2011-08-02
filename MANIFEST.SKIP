@@ -60,3 +60,4 @@
 
 # Avoid MYMETA.yml
 \bMYMETA.yml$
+\bMYMETA.json$

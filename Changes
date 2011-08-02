@@ -1,5 +1,8 @@
 Revision history for Perl extension Triggermail.
 
+1.002 Mon Aug  2 11:54:01 2011
+	- Use https to connect to Sailthru API instead of http.
+
 1.002 Mon Jul 18 14:52:12 2011
 	- Bugfix: don't die when receiving non-200 status code response from Sailthru API.
 

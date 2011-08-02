@@ -1,6 +1,6 @@
 package Triggermail;
 
-our $VERSION = '1.002';
+our $VERSION = '1.003';
 
 use strict;
 use warnings;
