@@ -204,19 +204,80 @@ sub _getSignatureHash {
 	return md5_hex($string);
 }
 
+#sub _flatten_hash {
+#	validate_pos( @_, { type => HASHREF }, { type => SCALAR }, { type => HASHREF }, { type => HASHREF } );
+#	my ( $self, $name, $nested_hash, $mother_hash ) = @_;
+#	while ( ( my $key, my $value ) = each %{$nested_hash} ) {
+#		if (   ref( $nested_hash->{$key} ) eq 'HASH'
+#			|| ref( $nested_hash->{$key} ) eq 'REF' ) {
+#			$self->_flatten_hash( $key, $nested_hash->{$key}, $mother_hash );
+#		}
+#		else {
+#			$mother_hash->{ $name . "[" . $key . "]" } = $value;
+#		}
+#	}
+#}
+
 sub _flatten_hash {
-	validate_pos( @_, { type => HASHREF }, { type => SCALAR }, { type => HASHREF }, { type => HASHREF } );
-	my ( $self, $name, $nested_hash, $mother_hash ) = @_;
-	while ( ( my $key, my $value ) = each %{$nested_hash} ) {
-		if (   ref( $nested_hash->{$key} ) eq 'HASH'
-			|| ref( $nested_hash->{$key} ) eq 'REF' ) {
-			$self->_flatten_hash( $key, $nested_hash->{$key}, $mother_hash );
-		}
-		else {
-			$mother_hash->{ $name . "[" . $key . "]" } = $value;
-		}
-	}
+    validate_pos(
+        @_,
+        { type => HASHREF },
+        { type => SCALAR },
+        { type => HASHREF },
+        { type => HASHREF },
+    ); 
+    my ( $self, $name, $nested_hash, $mother_hash ) = @_;
+    my @parents;
+   
+    $self->_flatten_hash_routine( $nested_hash, $mother_hash, \@parents);
 }
+
+
+sub _flatten_hash_routine {
+
+    validate_pos(
+        @_,
+        { type => HASHREF },
+        { type => HASHREF },
+        { type => HASHREF },
+        { type => ARRAYREF }
+    ); 
+
+    my ($self, $unflattened, $flattened, $parents) = @_;
+    while (my ($key, $value) = each(%$unflattened)) {
+        push (@$parents, $key);
+        my $type_name = ref($value);
+
+        if ($type_name eq "HASH") {
+            $self->_flatten_hash_routine($value, $flattened, $parents);   
+
+        } elsif ($type_name eq "ARRAY") {
+            my $parent_idx = 0;
+            foreach (@$value) {
+                my $array_val = $_;
+                push (@$parents, $parent_idx++);
+                my $array_idx = $self->_build_url_idx($parents);
+                $flattened->{$array_idx} = $array_val;
+                pop(@$parents);
+            }  
+        } else  {
+            my $array_idx = $self->_build_url_idx($parents);
+            $flattened->{$array_idx} = $value;
+        }  
+        pop (@$parents);
+    }  
+}
+
+sub _build_url_idx {
+    validate_pos(
+        @_,
+        { type => HASHREF },
+        { type => ARRAYREF }
+    );
+    my ($self, $dimension) = @_;
+    return  'vars[' . join('][', @$dimension ) . ']';
+}
+
 
 sub _extractValues {
 	validate_pos( @_, { type => HASHREF }, { type => HASHREF }, { type => ARRAYREF } );

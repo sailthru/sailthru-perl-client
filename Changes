@@ -1,5 +1,8 @@
 Revision history for Perl extension Triggermail.
 
+1.004 Thu Nov 17 11:38:00 2011
+    - Updating _flatten_hash to build appropriate html parameter arrays
+
 1.003 Mon Aug  2 11:54:01 2011
 	- Use https to connect to Sailthru API instead of http.
 
