@@ -50,7 +50,7 @@ sub send {
 	my ( $self, $template, $email, $vars_hash, $options_hash, $schedule_time ) = @_;
 	$data{'template'}      = $template;
 	$data{'email'}         = $email;
-	$data{'schedule_time'} = $schedule_time;
+	$data{'schedule_time'} = $schedule_time if $schedule_time;
 	$self->_flatten_hash( 'vars',    $vars_hash,    \%data ) if $vars_hash;
 	$self->_flatten_hash( 'options', $options_hash, \%data ) if $options_hash;
 	return $self->_apiCall( 'send', \%data, 'POST' );
@@ -161,7 +161,6 @@ sub _apiCall {
 	$data->{'format'}  = 'json';
 	$data->{'sig'}     = $self->_getSignatureHash($data);
 	my $result = $self->_httpRequest( API_URI . "/" . $action, $data, $method );
-
 	my $json    = JSON::XS->new->ascii->pretty->allow_nonref;
 	my $decoded = $json->decode( $result->content );
 	return $decoded ? $decoded : $result;
