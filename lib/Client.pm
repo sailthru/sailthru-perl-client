@@ -1,6 +1,6 @@
-package Triggermail;
+package Client;
 
-our $VERSION = '1.003';
+our $VERSION = '1.000';
 
 use strict;
 use warnings;
@@ -296,19 +296,19 @@ __END__
 
 =head1 NAME
 
-Triggermail - Perl module for accessing SailThru's platform
+Sailthru::Api::Client - Perl module for accessing SailThru's API
 
 =head1 SYNOPSIS
 
- use Triggermail;
- my $tm = Triggermail->new('api_key','secret'); # You can optionally include a timeout in seconds as a third parameter.
+ use Client;
+ my $tm = Client->new('api_key','secret'); # You can optionally include a timeout in seconds as a third parameter.
  %vars = ( name => "Joe Example", from_email => "approved_email@your_domain.com", your_variable => "some_value");
  %options = ( reply_to => "your reply_to header");
  $tm->send("template_name",'example@example.com',\%vars,\%options);
 
 =head1 DESCRIPTION
 
-Triggermail is a Perl module for accesing the Sailthru platform.
+Sailthru::Api::Client is a Perl module for accesing the Sailthru API.
 
 All methods return a hash with return values. Dump the hash or explore the SailThru API documentation page for what might be returned.
 
@@ -388,14 +388,19 @@ L<http://docs.sailthru.com/api>
 
 =head1 AUTHOR
 
+Steve Miketa
+
 Sam Gerstenzang
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2011 by Sam Gerstenzang
+Copyright (C) 2011 by Steve Miketa <steve@sailthru.com>
+
+Adapted from the original Triggermail module created by Sam Gerstenzang
 
 This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.10.0 or,
+it under the same terms as Perl itself, either Perl version 5.10.0 or, 
 at your option, any later version of Perl 5 you may have available.
+
 
 =cut

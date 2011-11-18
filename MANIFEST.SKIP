@@ -56,7 +56,7 @@
 
 ^MANIFEST\.SKIP
 # Avoid archives of this distribution
-\bTriggermail-[\d\.\_]+
+\bsailthru-perl-client-[\d\.\_]+
 
 # Avoid MYMETA.yml
 \bMYMETA.yml$
