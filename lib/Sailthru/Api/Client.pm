@@ -1,4 +1,4 @@
-package Client;
+package Sailthru::Api::Client;
 
 our $VERSION = '1.000';
 
@@ -300,8 +300,8 @@ Sailthru::Api::Client - Perl module for accessing SailThru's API
 
 =head1 SYNOPSIS
 
- use Client;
- my $tm = Client->new('api_key','secret'); # You can optionally include a timeout in seconds as a third parameter.
+ use Sailthru::Api::Client;
+ my $tm = Sailthru::Api::Client->new('api_key','secret'); # You can optionally include a timeout in seconds as a third parameter.
  %vars = ( name => "Joe Example", from_email => "approved_email@your_domain.com", your_variable => "some_value");
  %options = ( reply_to => "your reply_to header");
  $tm->send("template_name",'example@example.com',\%vars,\%options);
