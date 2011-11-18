@@ -1,6 +1,6 @@
 use Test::More tests => 5;
 
-use_ok('Sailthru::Api::Client');
+use_ok('Sailthru::Client');
 
 my ( $api_key, $secret ) = ( $ENV{TRIGGERMAIL_KEY}, $ENV{TRIGGERMAIL_SECRET} );
 
@@ -10,7 +10,7 @@ my ( $api_key, $secret ) = ( $ENV{TRIGGERMAIL_KEY}, $ENV{TRIGGERMAIL_SECRET} );
 #
 # create the Sailthru object
 #
-my $fake_tm = new Sailthru::Api::Client( 'api_key', 'secret' );
+my $fake_tm = new Sailthru::Client( 'api_key', 'secret' );
 
 ##################################################
 #

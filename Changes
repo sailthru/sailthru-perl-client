@@ -1,7 +1,7 @@
-Revision history for Perl extension Sailthru::Api::Client.
+Revision history for Perl extension Sailthru::Client.
 
-1.005 Fri Nov 18 10:28:00 2011
-    - Repackaging as Sailthru::Api::Client for official package support by Sailthru
+1.000 Fri Nov 18 10:28:00 2011
+    - Repackaging as Sailthru::Client for official package support by Sailthru
 
 1.004 Thu Nov 17 11:38:00 2011
     - Updating _flatten_hash to build appropriate html parameter arrays

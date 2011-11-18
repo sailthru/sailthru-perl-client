@@ -1,7 +1,7 @@
 use ExtUtils::MakeMaker;
 WriteMakefile(
-	NAME         => 'Sailthru::Api::Client',
-	VERSION_FROM => 'lib/Sailthru/Api/Client.pm',
+	NAME         => 'Sailthru::Client',
+	VERSION_FROM => 'lib/Sailthru/Client.pm',
 	PREREQ_PM    => {
 		Digest::MD5          => 0,
 		HTTP::Request        => 0,
@@ -11,6 +11,6 @@ WriteMakefile(
 		Params::Validate     => 0,
 		URI::Escape          => 0,
 	},
-	ABSTRACT_FROM => 'lib/Sailthru/Api/Client.pm',
+	ABSTRACT_FROM => 'lib/Sailthru/Client.pm',
 	AUTHOR        => 'Sam Gerstenzang <sgerstenzang@stanford.edu>, Steve Miketa <steve@sailthru.com>'
 );

@@ -1,4 +1,4 @@
-package Sailthru::Api::Client;
+package Sailthru::Client;
 
 our $VERSION = '1.000';
 
@@ -296,19 +296,19 @@ __END__
 
 =head1 NAME
 
-Sailthru::Api::Client - Perl module for accessing SailThru's API
+Sailthru::Client - Perl module for accessing SailThru's API
 
 =head1 SYNOPSIS
 
- use Sailthru::Api::Client;
- my $tm = Sailthru::Api::Client->new('api_key','secret'); # You can optionally include a timeout in seconds as a third parameter.
+ use Sailthru::Client;
+ my $tm = Sailthru::Client->new('api_key','secret'); # You can optionally include a timeout in seconds as a third parameter.
  %vars = ( name => "Joe Example", from_email => "approved_email@your_domain.com", your_variable => "some_value");
  %options = ( reply_to => "your reply_to header");
  $tm->send("template_name",'example@example.com',\%vars,\%options);
 
 =head1 DESCRIPTION
 
-Sailthru::Api::Client is a Perl module for accesing the Sailthru API.
+Sailthru::Client is a Perl module for accesing the Sailthru API.
 
 All methods return a hash with return values. Dump the hash or explore the SailThru API documentation page for what might be returned.
 

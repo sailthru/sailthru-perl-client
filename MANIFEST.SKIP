@@ -56,7 +56,7 @@
 
 ^MANIFEST\.SKIP
 # Avoid archives of this distribution
-\bsailthru-perl-client-[\d\.\_]+
+\bSailthru-Client-[\d\.\_]+
 
 # Avoid MYMETA.yml
 \bMYMETA.yml$
