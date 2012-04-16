@@ -1,4 +1,4 @@
-Revision history for Perl extension Sailthru::Client.
+Revision history for Perl module Sailthru::Client.
 
 1.001 Fri Dec 16 14:47:23
     - Adding support for UTF8 chars going to the md5_hex function
