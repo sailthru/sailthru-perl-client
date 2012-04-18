@@ -1,9 +1,9 @@
 package Sailthru::Client;
 
-our $VERSION = '1.001';
-
 use strict;
 use warnings;
+
+our $VERSION = '1.001';
 
 use constant API_URI => 'https://api.sailthru.com';
 
@@ -11,6 +11,7 @@ use Encode qw( encode_utf8 );
 use Digest::MD5 qw( md5_hex );
 use JSON::XS;
 use LWP;
+use URI;
 use HTTP::Request;
 use URI::Escape;
 use Params::Validate qw( :all );
@@ -37,10 +38,15 @@ sub setEmail {
     my ( $self, $email, $vars_ref, $lists_ref, $templates_ref ) = @_;
     my %data;
     $data{'email'} = $email;
-    $self->_flatten_hash( 'vars',  $vars_ref,  \%data ) if $vars_ref;
-    $self->_flatten_hash( 'lists', $lists_ref, \%data ) if $lists_ref;
-    $self->_flatten_hash( 'templates', $templates_ref, \%data )
-      if $templates_ref;
+    if ($vars_ref) {
+        $self->_flatten_hash( 'vars', $vars_ref, \%data );
+    }
+    if ($lists_ref) {
+        $self->_flatten_hash( 'lists', $lists_ref, \%data );
+    }
+    if ($templates_ref) {
+        $self->_flatten_hash( 'templates', $templates_ref, \%data );
+    }
     return $self->_apiCall( 'email', \%data, 'POST' );
 }
 
@@ -48,11 +54,17 @@ sub send {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR }, { type => SCALAR }, 0, 0, 0 );
     my %data;
     my ( $self, $template, $email, $vars_hash, $options_hash, $schedule_time ) = @_;
-    $data{'template'}      = $template;
-    $data{'email'}         = $email;
-    $data{'schedule_time'} = $schedule_time if $schedule_time;
-    $self->_flatten_hash( 'vars',    $vars_hash,    \%data ) if $vars_hash;
-    $self->_flatten_hash( 'options', $options_hash, \%data ) if $options_hash;
+    $data{'template'} = $template;
+    $data{'email'}    = $email;
+    if ($schedule_time) {
+        $data{'schedule_time'} = $schedule_time;
+    }
+    if ($vars_hash) {
+        $self->_flatten_hash( 'vars', $vars_hash, \%data );
+    }
+    if ($options_hash) {
+        $self->_flatten_hash( 'options', $options_hash, \%data );
+    }
     return $self->_apiCall( 'send', \%data, 'POST' );
 }
 
@@ -87,10 +99,11 @@ sub scheduleBlast {
         from_email    => $from_email,
         subject       => $subject,
         content_html  => $content_html,
-        content_text  => $content_text
+        content_text  => $content_text,
     );
     if ($options) {
-        my %merged_hash = ( %data, %{$options} );    #merge in the options hash
+        # merge in the options hash
+        my %merged_hash = ( %data, %{$options} );
         %data = %merged_hash;
     }
     return $self->_apiCall( 'blast', \%data, 'POST' );
@@ -127,7 +140,8 @@ sub copyTemplate {
 
     # $self->_flatten_hash( 'options', $options, \%data ) if $options;
     if ($options) {
-        my %merged_hash = ( %data, %{$options} );    #merge in the options hash
+        # merge in the options hash
+        my %merged_hash = ( %data, %{$options} );
         %data = %merged_hash;
     }
     return $self->_apiCall( 'blast', \%data, 'POST' );
@@ -143,11 +157,13 @@ sub getTemplate {
 sub importContacts {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR }, 0 );
     my ( $self, $email, $password, $include_names ) = @_;
-    $include_names = 0 if ( !$include_names );
+    if ( !$include_names ) {
+        $include_names = 0;
+    }
     my %data = (
         email         => $email,
         password      => $password,
-        include_names => $include_names
+        include_names => $include_names,
     );
     return $self->_apiCall( 'contacts', \%data, 'POST' );
 }
@@ -160,7 +176,7 @@ sub _apiCall {
     $data->{'api_key'} = $self->{api_key};
     $data->{'format'}  = 'json';
     $data->{'sig'}     = $self->_getSignatureHash($data);
-    my $result = $self->_httpRequest( API_URI . "/" . $action, $data, $method );
+    my $result  = $self->_httpRequest( API_URI . '/' . $action, $data, $method );
     my $json    = JSON::XS->new->ascii->pretty->allow_nonref;
     my $decoded = $json->decode( $result->content );
     return $decoded ? $decoded : $result;
@@ -171,25 +187,24 @@ sub _httpRequest {
 
     my ( $self, $url, $data, $method ) = @_;
     my $browser = LWP::UserAgent->new;
-    $browser->timeout( $self->{timeout} ) if $self->{timeout};
+    if ($self->{timeout}) {
+        $browser->timeout( $self->{timeout} );
+    }
     my $response;
     if ( $method eq 'POST' ) {
         $response = $browser->post( $url, $data );
     }
-    else {    #GET
-        use URI;
+    else {
+        # GET
         $url = URI->new($url);
         $url->query_form( %{$data} );
         $response = $browser->get($url);
     }
 
-# don't die on based on status code: other sailthru clients don't
-#    die "$url error: ", $response->status_line
-#      unless $response->is_success;
-
     if ($response) {
         return $response;
     }
+    return;
 }
 
 sub _getSignatureHash {
@@ -199,8 +214,8 @@ sub _getSignatureHash {
     my @values;
     $self->_extractValues( $params, \@values );
     @values = sort @values;
-    my $string = $self->{secret} . join( '', @values );
-    return md5_hex(encode_utf8($string));
+    my $string = $self->{secret} . join q{}, @values;
+    return md5_hex( encode_utf8($string) );
 }
 
 #sub _flatten_hash {
@@ -218,64 +233,49 @@ sub _getSignatureHash {
 #}
 
 sub _flatten_hash {
-    validate_pos(
-        @_,
-        { type => HASHREF },
-        { type => SCALAR },
-        { type => HASHREF },
-        { type => HASHREF },
-    );
+    validate_pos( @_, { type => HASHREF }, { type => SCALAR }, { type => HASHREF }, { type => HASHREF }, );
     my ( $self, $name, $nested_hash, $mother_hash ) = @_;
     my @parents;
-
-    $self->_flatten_hash_routine( $nested_hash, $mother_hash, \@parents);
+    $self->_flatten_hash_routine( $nested_hash, $mother_hash, \@parents );
+    return;
 }
 
-
 sub _flatten_hash_routine {
-    validate_pos(
-        @_,
-        { type => HASHREF },
-        { type => HASHREF },
-        { type => HASHREF },
-        { type => ARRAYREF }
-    );
+    validate_pos( @_, { type => HASHREF }, { type => HASHREF }, { type => HASHREF }, { type => ARRAYREF } );
 
-    my ($self, $unflattened, $flattened, $parents) = @_;
-    while (my ($key, $value) = each(%$unflattened)) {
-        push (@$parents, $key);
-        my $type_name = ref($value);
+    my ( $self, $unflattened, $flattened, $parents ) = @_;
+    while ( my ( $key, $value ) = each %{$unflattened} ) {
+        push @{$parents}, $key;
+        my $type_name = ref $value;
 
-        if ($type_name eq "HASH") {
-            $self->_flatten_hash_routine($value, $flattened, $parents);
+        if ( $type_name eq 'HASH' ) {
+            $self->_flatten_hash_routine( $value, $flattened, $parents );
 
-        } elsif ($type_name eq "ARRAY") {
+        }
+        elsif ( $type_name eq 'ARRAY' ) {
             my $parent_idx = 0;
-            foreach (@$value) {
+            foreach (@{$value}) {
                 my $array_val = $_;
-                push (@$parents, $parent_idx++);
+                push @{$parents}, $parent_idx++;
                 my $array_idx = $self->_build_url_idx($parents);
                 $flattened->{$array_idx} = $array_val;
-                pop(@$parents);
+                pop @{$parents};
             }
-        } else  {
+        }
+        else {
             my $array_idx = $self->_build_url_idx($parents);
             $flattened->{$array_idx} = $value;
         }
-        pop (@$parents);
+        pop @{$parents};
     }
+    return;
 }
 
 sub _build_url_idx {
-    validate_pos(
-        @_,
-        { type => HASHREF },
-        { type => ARRAYREF }
-    );
-    my ($self, $dimension) = @_;
-    return  'vars[' . join('][', @$dimension ) . ']';
+    validate_pos( @_, { type => HASHREF }, { type => ARRAYREF } );
+    my ( $self, $dimension ) = @_;
+    return 'vars[' . join( '][', @{$dimension} ) . ']';
 }
-
 
 sub _extractValues {
     validate_pos( @_, { type => HASHREF }, { type => HASHREF }, { type => ARRAYREF } );
@@ -288,6 +288,7 @@ sub _extractValues {
             push @{$array}, $value;
         }
     }
+    return;
 }
 
 1;
@@ -295,7 +296,7 @@ __END__
 
 =head1 NAME
 
-Sailthru::Client - Perl module for accessing SailThru's API
+Sailthru::Client - Perl module for accessing Sailthru's API
 
 =head1 SYNOPSIS
 
@@ -307,19 +308,19 @@ Sailthru::Client - Perl module for accessing SailThru's API
 
 =head1 DESCRIPTION
 
-Sailthru::Client is a Perl module for accesing the Sailthru API.
+Sailthru::Client is a Perl module for accessing the Sailthru API.
 
-All methods return a hash with return values. Dump the hash or explore the SailThru API documentation page for what might be returned.
+All methods return a hash with return values. Dump the hash or explore the Sailthru API documentation page for what might be returned.
 
 L<http://docs.sailthru.com/api>
 
-Some options might change. Always consult the SailThru API documentation for the best information.
+Some options might change. Always consult the Sailthru API documentation for the best information.
 
 =head2 METHODS
 
 =over 4
 
-=item C<getEmail( $email, )>
+=item C<getEmail( $email )>
 
 =item C<setEmail( $email, \%vars, \%lists, \%templates )>
 
@@ -363,7 +364,7 @@ L<http://docs.sailthru.com/api/blast>
 Check if blast worked, using blast_id returned in the hash from scheduleBlast()
 Takes blast_id.
 
-=item C<copyTemplate( $template_name, $data_feed, $setup, $subject_line, $schedule_time, $list )>
+=item C<copyTemplate( $template_name, $data_feed, $setup, $subject_line, $schedule_time, $list, \%options )>
 
 Allows you to use an existing template to send out a blast.
 
@@ -378,10 +379,9 @@ Takes email, password as strings. By default does not include names. Pass 1 as t
 
 =back
 
-
 =head1 SEE ALSO
 
-See the SailThru API documentation for more details on their API.
+See the Sailthru API documentation for more details on their API.
 
 L<http://docs.sailthru.com/api>
 
@@ -391,7 +391,7 @@ Steve Miketa
 
 Sam Gerstenzang
 
-=head1 COPYRIGHT AND LICENSE
+=head1 LICENSE AND COPYRIGHT
 
 Copyright (C) 2011 by Steve Miketa <steve@sailthru.com>
 
@@ -400,6 +400,5 @@ Adapted from the original Triggermail module created by Sam Gerstenzang
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.10.0 or,
 at your option, any later version of Perl 5 you may have available.
-
 
 =cut
