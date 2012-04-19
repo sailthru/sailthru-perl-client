@@ -9,6 +9,7 @@ WriteMakefile(
 		LWP                  => 0,
 		LWP::Protocol::https => 0,
 		Params::Validate     => 0,
+		URI                  => 0,
 		URI::Escape          => 0,
 	},
 	ABSTRACT_FROM => 'lib/Sailthru/Client.pm',
