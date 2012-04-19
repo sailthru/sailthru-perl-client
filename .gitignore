@@ -1,7 +1,7 @@
-MANIFEST
 MANIFEST.SKIP.bak
 MANIFEST.bak
 META.yml
+META.json
 MYMETA.yml
 MYMETA.json
 Makefile
