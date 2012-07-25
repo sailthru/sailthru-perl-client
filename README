@@ -1,6 +1,10 @@
 Sailthru::Client
 ===========
 
+DOCUMENTATION
+
+http://getstarted.sailthru.com/developers/api-libraries/perl
+
 INSTALLATION
 
 To install this module type the following:
