@@ -14,18 +14,23 @@ To install this module type the following:
    make test
    make install
 
+Make sure to strip all newlines (whether literal or "\n" encoded from request
+parameters) or JSON encoding will fail.
+
 DEPENDENCIES
 
 This module requires these other modules and libraries:
 
-Encode
-Digest::MD5
-HTTP::Request
-JSON::XS
-LWP
-LWP::Protocol::https
-Params::Validate
-URI::Escape
+Module (latest tested version)
+------
+Encode (2.47)
+Digest::MD5 (2.52)
+HTTP::Request (6.00)
+JSON::XS (2.33)
+LWP (6.04)
+LWP::Protocol::https (6.04)
+Params::Validate (1.06)
+URI::Escape (3.31)
 
 COPYRIGHT AND LICENSE
 
