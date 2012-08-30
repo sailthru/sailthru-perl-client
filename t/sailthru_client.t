@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 5;
+use Test::More tests => 4;
 
 use lib 'lib';
 
@@ -11,11 +11,6 @@ my ( $api_key, $secret ) = ( $ENV{SAILTHRU_KEY}, $ENV{SAILTHRU_SECRET} );
 
 # create the Sailthru::Client object
 my $fake_sc = Sailthru::Client->new( 'key', 'secret' );
-
-# signature hash generation invalid key response
-my %vars = ( var1 => 'var_content', );
-my $signature = $fake_sc->_getSignatureHash( \%vars );
-is( $signature, '27a0c810cdd561a69de9ca9bae1f3d82', 'Testing signature hash generation.' );
 
 my $sc;
 my %invalid_key;
