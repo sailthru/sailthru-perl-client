@@ -11,6 +11,7 @@ use Digest::MD5 'md5_hex';
 use JSON::XS;
 use Carp;
 use LWP::UserAgent;
+use Params::Validate qw( :all );
 
 sub new {
 	my ($class, $key, $secret, $timeout) = @_;
@@ -83,55 +84,89 @@ sub _call_api_with_arguments {
 }
 
 sub getEmail {
+    validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
 	my ($self, $email) = @_;
 	$self->call_api('POST', 'email', {email=>$email});
 }
 
 sub setEmail_1 {
+    validate_pos( @_, { type => HASHREF }, { type => SCALAR }, 0, 0, 0 );
     my ( $self, $email, $vars, $lists, $templates ) = @_;
 	$self->call_api('POST', 'email', { email=>$email, vars=>$vars, lists=>$lists, templates=>$templates });
 }
 
 sub setEmail {
+    validate_pos( @_, { type => HASHREF }, { type => SCALAR }, 0, 0, 0 );
 	my $self = shift;
 	my @params = qw(email vars lists templates);
 	$self->_call_api_with_arguments('POST', 'email', \@params, \@_);
 }
 
 sub send {
+    validate_pos( @_, { type => HASHREF }, { type => SCALAR }, { type => SCALAR }, 0, 0, 0 );
 	my $self = shift;
 	my @params = qw(email vars lists options schedule_time);
 	$self->call_api_with_arguments('POST', 'send', \@params, \@_);
 }
 
 sub getSend {
+    validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
 	my ($self, $id) = @_;
 	$self->call_api('GET', 'send', {send_id=>$id});
 }
 
 sub scheduleBlast {
+    validate_pos(
+        @_,
+        { type => HASHREF },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR },
+        0
+    );
+
 	my $self = shift;
 	my @params = qw(name list schedule_time from_name from_email subject content_html content_text);
 	$self->_call_api_with_arguments('POST', 'blast', \@params, \@_);
 }
 	
 sub getBlast {
+    validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
 	my ($self, $id) = @_;
 	$self->call_api('GET', 'blast', {blast_id=>$id});
 }
 
 sub copyTemplate {
+    validate_pos(
+        @_,
+        { type => HASHREF },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR },
+        0
+    );
+
 	my $self = shift;
 	my @params = qw(copy_template data_feed_url setup name schedule_time list);
 	$self->_call_api_with_arguments('POST', 'blast', \@params, \@_);
 }
 
 sub getTemplate {
+    validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
 	my ($self, $t) = @_;
 	$self->call_api( 'GET', 'template', {template=>$t} );
 }
 
 sub importContacts {
+    validate_pos( @_, { type => HASHREF }, { type => SCALAR }, 0 );
 	my $self = shift;
 	my @params = qw(email password include_names);
 	$self->_call_api_with_arguments('POST', 'contacts', \@params, \@_);
