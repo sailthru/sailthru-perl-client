@@ -106,7 +106,7 @@ sub send {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR }, { type => SCALAR }, 0, 0, 0 );
 	my $self = shift;
 	my @params = qw(email vars lists options schedule_time);
-	$self->call_api_with_arguments('POST', 'send', \@params, \@_);
+	$self->_call_api_with_arguments('POST', 'send', \@params, \@_);
 }
 
 sub getSend {
