@@ -13,5 +13,5 @@ WriteMakefile(
 		URI::Escape          => 0,
 	},
 	ABSTRACT_FROM => 'lib/Sailthru/Client.pm',
-	AUTHOR        => 'Sam Gerstenzang <sgerstenzang@stanford.edu>, Steve Miketa <steve@sailthru.com>'
+	AUTHOR        => 'Steve Sanbeg <stevesanbeg@buzzfeed.com>, Sam Gerstenzang <sgerstenzang@stanford.edu>, Steve Miketa <steve@sailthru.com>'
 );
