@@ -89,12 +89,6 @@ sub getEmail {
 	$self->call_api('POST', 'email', {email=>$email});
 }
 
-sub setEmail_1 {
-    validate_pos( @_, { type => HASHREF }, { type => SCALAR }, 0, 0, 0 );
-    my ( $self, $email, $vars, $lists, $templates ) = @_;
-	$self->call_api('POST', 'email', { email=>$email, vars=>$vars, lists=>$lists, templates=>$templates });
-}
-
 sub setEmail {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR }, 0, 0, 0 );
 	my $self = shift;
