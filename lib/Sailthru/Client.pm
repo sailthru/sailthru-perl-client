@@ -6,107 +6,102 @@ use warnings;
 our $VERSION = '2.000';
 use constant API_URI => 'https://api.sailthru.com/';
 
-use Encode qw( decode_utf8 encode_utf8 );
-use Digest::MD5 'md5_hex';
-use JSON::XS;
 use Carp;
+use JSON::XS;
 use LWP::UserAgent;
+use Digest::MD5 'md5_hex';
 use Params::Validate qw( :all );
+use Encode qw( decode_utf8 encode_utf8 );
 
 sub new {
-	my ($class, $key, $secret, $timeout) = @_;
-	my %self  = (
+    my ( $class, $key, $secret, $timeout ) = @_;
+    my %self = (
         api_key => $key,
         secret  => $secret,
-		encoder => JSON::XS->new->ascii->allow_nonref,
-		ua => LWP::UserAgent->new,
+        encoder => JSON::XS->new->ascii->allow_nonref,
+        ua      => LWP::UserAgent->new,
     );
-	$self{ua}->timeout( $timeout ) if $timeout;
+    $self{ua}->timeout($timeout) if $timeout;
     bless \%self, $class;
 }
 
 sub _generate_sig {
-	my $self = shift;
-	my $args = shift;
-	#api_key should already be in args
-	md5_hex( 
-		encode_utf8(
-			decode_utf8(
-				join ( '', $self->{secret}, sort(values(%$args)) ),
-				Encode::FB_DEFAULT
-			)
-		)
-	);
+    my $self = shift;
+    my $args = shift;
+    #api_key should already be in args
+    md5_hex( encode_utf8( decode_utf8( join( '', $self->{secret}, sort( values(%$args) ) ), Encode::FB_DEFAULT ) ) );
 }
 
 sub call_api_raw {
-	my ($self, $method, $action, $json) = @_;
+    my ( $self, $method, $action, $json ) = @_;
 
-	$json = $self->{encoder}->encode($json) if ref $json;
-	my %data = (api_key => $self->{api_key}, format=>'json', json=>$json);
-	$data{sig} = $self->_generate_sig(\%data);
+    $json = $self->{encoder}->encode($json) if ref $json;
+    my %data = ( api_key => $self->{api_key}, format => 'json', json => $json );
+    $data{sig} = $self->_generate_sig( \%data );
 
-	my $response;
-	if ($method eq 'GET') {
-		my $url = URI->new(API_URI . $action);
-		$url->query_form(%data);
-		$response = $self->{ua}->get($url);
-	} elsif ($method eq 'POST') {
-		$response = $self->{ua}->post(API_URI . $action, \%data);
-	} else {
-		croak "Invalid method: $method";
-	}
+    my $response;
+    if ( $method eq 'GET' ) {
+        my $url = URI->new( API_URI . $action );
+        $url->query_form(%data);
+        $response = $self->{ua}->get($url);
+    }
+    elsif ( $method eq 'POST' ) {
+        $response = $self->{ua}->post( API_URI . $action, \%data );
+    }
+    else {
+        croak "Invalid method: $method";
+    }
 
-	return $response;
+    return $response;
 }
 
 sub call_api {
-	my $self = $_[0];
-	my $response = &call_api_raw;
-	$self->{encoder}->decode( $response->content );
+    my $self     = $_[0];
+    my $response = &call_api_raw;
+    $self->{encoder}->decode( $response->content );
 }
 
 sub _call_api_with_arguments {
-	my ($self, $method, $action, $arg_names, $args) = @_;
-	my %data;
+    my ( $self, $method, $action, $arg_names, $args ) = @_;
+    my %data;
 
-	if (@$args > @$arg_names) {
-		my $opts = pop @$args;
-		%data = %$opts;
-	};
+    if ( @$args > @$arg_names ) {
+        my $opts = pop @$args;
+        %data = %$opts;
+    }
 
-	croak "Extra arguments specified" if @$args > @$arg_names;
+    croak "Extra arguments specified" if @$args > @$arg_names;
 
-	foreach my $i (0 .. $#{$arg_names}) {
-		$data{ $arg_names->[$i] } = $args->[$i] if defined $args->[$i];
-	}
-	$self->call_api($method, $action, \%data);
+    foreach my $i ( 0 .. $#{$arg_names} ) {
+        $data{ $arg_names->[$i] } = $args->[$i] if defined $args->[$i];
+    }
+    $self->call_api( $method, $action, \%data );
 }
 
 sub getEmail {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
-	my ($self, $email) = @_;
-	$self->call_api('POST', 'email', {email=>$email});
+    my ( $self, $email ) = @_;
+    $self->call_api( 'POST', 'email', { email => $email } );
 }
 
 sub setEmail {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR }, 0, 0, 0 );
-	my $self = shift;
-	my @params = qw(email vars lists templates);
-	$self->_call_api_with_arguments('POST', 'email', \@params, \@_);
+    my $self   = shift;
+    my @params = qw(email vars lists templates);
+    $self->_call_api_with_arguments( 'POST', 'email', \@params, \@_ );
 }
 
 sub send {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR }, { type => SCALAR }, 0, 0, 0 );
-	my $self = shift;
-	my @params = qw(email vars lists options schedule_time);
-	$self->_call_api_with_arguments('POST', 'send', \@params, \@_);
+    my $self   = shift;
+    my @params = qw(email vars lists options schedule_time);
+    $self->_call_api_with_arguments( 'POST', 'send', \@params, \@_ );
 }
 
 sub getSend {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
-	my ($self, $id) = @_;
-	$self->call_api('GET', 'send', {send_id=>$id});
+    my ( $self, $id ) = @_;
+    $self->call_api( 'GET', 'send', { send_id => $id } );
 }
 
 sub scheduleBlast {
@@ -124,15 +119,15 @@ sub scheduleBlast {
         0
     );
 
-	my $self = shift;
-	my @params = qw(name list schedule_time from_name from_email subject content_html content_text);
-	$self->_call_api_with_arguments('POST', 'blast', \@params, \@_);
+    my $self   = shift;
+    my @params = qw(name list schedule_time from_name from_email subject content_html content_text);
+    $self->_call_api_with_arguments( 'POST', 'blast', \@params, \@_ );
 }
-	
+
 sub getBlast {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
-	my ($self, $id) = @_;
-	$self->call_api('GET', 'blast', {blast_id=>$id});
+    my ( $self, $id ) = @_;
+    $self->call_api( 'GET', 'blast', { blast_id => $id } );
 }
 
 sub copyTemplate {
@@ -148,22 +143,22 @@ sub copyTemplate {
         0
     );
 
-	my $self = shift;
-	my @params = qw(copy_template data_feed_url setup name schedule_time list);
-	$self->_call_api_with_arguments('POST', 'blast', \@params, \@_);
+    my $self   = shift;
+    my @params = qw(copy_template data_feed_url setup name schedule_time list);
+    $self->_call_api_with_arguments( 'POST', 'blast', \@params, \@_ );
 }
 
 sub getTemplate {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
-	my ($self, $t) = @_;
-	$self->call_api( 'GET', 'template', {template=>$t} );
+    my ( $self, $t ) = @_;
+    $self->call_api( 'GET', 'template', { template => $t } );
 }
 
 sub importContacts {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR }, 0 );
-	my $self = shift;
-	my @params = qw(email password include_names);
-	$self->_call_api_with_arguments('POST', 'contacts', \@params, \@_);
+    my $self   = shift;
+    my @params = qw(email password include_names);
+    $self->_call_api_with_arguments( 'POST', 'contacts', \@params, \@_ );
 }
 
 =head1 NAME
@@ -175,11 +170,11 @@ Sailthru::Client - Perl module for accessing Sailthru's API
  use Sailthru::Client;
 
  # Optionally include timeout in seconds as the third parameter.
- $tm = Sailthru::Client->new('api_key','secret'); 
+ $tm = Sailthru::Client->new('api_key','secret');
 
- %vars = ( 
-    name => "Joe Example", 
-    from_email => "approved_email@your_domain.com", 
+ %vars = (
+    name => "Joe Example",
+    from_email => "approved_email@your_domain.com",
     your_variable => "some_value"
  );
  %options = ( reply_to => "your reply_to header");
