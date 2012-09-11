@@ -28,11 +28,11 @@ sub new {
 sub _generate_sig {
     my $self = shift;
     my $args = shift;
-    #api_key should already be in args
+    # api_key should already be in args
     md5_hex( encode_utf8( decode_utf8( join( '', $self->{secret}, sort( values(%$args) ) ), Encode::FB_DEFAULT ) ) );
 }
 
-sub call_api_raw {
+sub _call_api_raw {
     my ( $self, $method, $action, $json ) = @_;
 
     $json = $self->{encoder}->encode($json) if ref $json;
@@ -55,9 +55,9 @@ sub call_api_raw {
     return $response;
 }
 
-sub call_api {
+sub _call_api {
     my $self     = $_[0];
-    my $response = &call_api_raw;
+    my $response = &_call_api_raw;
     $self->{encoder}->decode( $response->content );
 }
 
@@ -75,13 +75,13 @@ sub _call_api_with_arguments {
     foreach my $i ( 0 .. $#{$arg_names} ) {
         $data{ $arg_names->[$i] } = $args->[$i] if defined $args->[$i];
     }
-    $self->call_api( $method, $action, \%data );
+    $self->_call_api( $method, $action, \%data );
 }
 
 sub getEmail {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
     my ( $self, $email ) = @_;
-    $self->call_api( 'POST', 'email', { email => $email } );
+    $self->_call_api( 'POST', 'email', { email => $email } );
 }
 
 sub setEmail {
@@ -101,7 +101,7 @@ sub send {
 sub getSend {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
     my ( $self, $id ) = @_;
-    $self->call_api( 'GET', 'send', { send_id => $id } );
+    $self->_call_api( 'GET', 'send', { send_id => $id } );
 }
 
 sub scheduleBlast {
@@ -127,7 +127,7 @@ sub scheduleBlast {
 sub getBlast {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
     my ( $self, $id ) = @_;
-    $self->call_api( 'GET', 'blast', { blast_id => $id } );
+    $self->_call_api( 'GET', 'blast', { blast_id => $id } );
 }
 
 sub copyTemplate {
@@ -295,5 +295,7 @@ it under the same terms as Perl itself, either Perl version 5.10.0 or,
 at your option, any later version of Perl 5 you may have available.
 
 =cut
+
+1;
 
 1;
