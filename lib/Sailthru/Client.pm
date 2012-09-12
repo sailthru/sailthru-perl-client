@@ -269,18 +269,21 @@ sub _call_api_raw {
     my %data = ( api_key => $self->{api_key}, format => 'json', json => $json );
     $data{sig} = $self->_generate_sig( \%data );
 
-    my $response;
-    if ( $method eq 'GET' ) {
-        my $url = URI->new( API_URI . $action );
-        $url->query_form(%data);
-        $response = $self->{ua}->get($url);
-    }
-    elsif ( $method eq 'POST' ) {
-        $response = $self->{ua}->post( API_URI . $action, \%data );
-    }
-    else {
-        croak "Invalid method: $method";
-    }
+	my $response;
+	if ($method eq 'GET') {
+		my $url = URI->new(API_URI . $action);
+		$url->query_form(%data);
+		$response = $self->{ua}->get($url);
+	} elsif ($method eq 'POST') {
+		$response = $self->{ua}->post(API_URI . $action, \%data);
+	} elsif ($method eq 'DELETE') {
+		#$response = $self->{ua}->delete(API_URI . $action, \%data);
+		my $url = URI->new(API_URI . $action);
+		$url->query_form(%data);
+		$response = $self->{ua}->delete($url);
+	} else {
+		croak "Invalid method: $method";
+	}
 
     return $response;
 }
