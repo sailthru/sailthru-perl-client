@@ -53,6 +53,11 @@ sub call_api_raw {
 		$response = $self->{ua}->get($url);
 	} elsif ($method eq 'POST') {
 		$response = $self->{ua}->post(API_URI . $action, \%data);
+	} elsif ($method eq 'DELETE') {
+		#$response = $self->{ua}->delete(API_URI . $action, \%data);
+		my $url = URI->new(API_URI . $action);
+		$url->query_form(%data);
+		$response = $self->{ua}->delete($url);
 	} else {
 		croak "Invalid method: $method";
 	}
