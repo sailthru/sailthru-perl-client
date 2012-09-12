@@ -8,11 +8,11 @@ use_ok('Sailthru::Client');
 
 my ( $api_key, $secret ) = ( $ENV{SAILTHRU_KEY}, $ENV{SAILTHRU_SECRET} );
 
+#resources to use for the test.  These will be automatically created/deleted on Sailthru
 use constant LIST     => 'CPAN test list';
 use constant EMAIL    => 'sc-cpan@example.com';
 use constant TEMPLATE => 'CPAN Test';
 
-# testing invalid email
 SKIP: {
     skip 'Requires an API key and secret.', 1 if not defined $api_key and not defined $secret;
     my $sc = Sailthru::Client->new( $api_key, $secret );
@@ -21,10 +21,10 @@ SKIP: {
 	# Grab template source/preview
 	############################################################
 
-	#create template
+	#create template (or overwrite if already exists)
 	my @lines = <DATA>; close DATA;
 	my $create_template = $sc->call_api('POST', 'template', {template=>TEMPLATE, content_html=>"@lines"});
-	is($create_template->{error}, undef);
+	is($create_template->{error}, undef, "no error creating template");
 
 	#valid source
 	my $source = $sc->call_api('POST', 'blast', {copy_template=>TEMPLATE});
@@ -59,9 +59,11 @@ SKIP: {
 	my $email;
 	
 	#try to create list, in case it doesn't exist (will delete at end, anyway) and verify it's there
-	$sc->call_api('POST', 'list', {list=>LIST});
+	$email = $sc->call_api('POST', 'list', {list=>LIST});
+	is($email->{errormsg}, undef, "No error creating list");
 	$email = $sc->call_api('GET', 'list', {list=>LIST});
-	#is($email->{name}, LIST, "email list exists");
+	is($email->{list}, LIST, "email list exists");
+	is($email->{errormsg}, undef, "No error getting list");
 
 	# add via call_api
 	$sc->call_api( 'POST', 'email', {email=>EMAIL(), lists=>{LIST()=>1}} );
