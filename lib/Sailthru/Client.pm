@@ -2,7 +2,12 @@ package Sailthru::Client;
 
 # TODO compare old methods and new methods
 # TODO deprecation warnings in old methods
+# TODO implement old methods with new api_* methods
 # TODO new implementation of send
+# TODO prefer ascii or utf8 for json? how does that affect md5?
+# TODO depreceate _generate_sig
+# TODO depreceate *call_api* methods
+# TODO where does my json decoding happen?
 
 use strict;
 use warnings;
@@ -13,23 +18,58 @@ use constant API_URI => 'https://api.sailthru.com/';
 use Carp;
 use JSON::XS;
 use LWP::UserAgent;
-use Digest::MD5 'md5_hex';
+use Digest::MD5 qw( md5_hex );
 use Params::Validate qw( :all );
 use Encode qw( decode_utf8 encode_utf8 );
 
 ### helper methods
 
+# Every request must also generate a signature hash called sig according to the
+# following rules:
+#
+# * take the string values of every parameter, including api_key
+# * sort the values alphabetically, case-sensitively (i.e. ordered by Unicode code point)
+# * concatenate the sorted values, and prepend this string with your shared secret
+# * generate an MD5 hash of this string and use this as sig
+# * now generate your URL-encoded query string from your parameters plus sig
+
+# args: params
+sub extract_param_values {
+    my ($params) = @_;
+    my $values = [];
+    # hashref
+    if ( ref $params eq ref {} ) {
+        for my $v ( values %{$params} ) {
+            push @{$values}, @{ extract_param_values($v) };
+        }
+    }
+    # arrayref
+    elsif ( ref $params eq ref [] ) {
+        for my $v ( @{$params} ) {
+            push @{$values}, @{ extract_param_values($v) };
+        }
+    }
+    # value
+    else {
+        push @{$values}, $params;
+    }
+    return $values;
+}
+
+# args: params, secret
+sub get_signature_string {
+    validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
+    my ($params, $secret) = @_;
+    my $param_values = extract_param_values($params);
+    return join '', $secret, sort @{$param_values};
+}
+
 # args: params, secret
 sub get_signature_hash {
-    # TODO
-
-    # XXX ruby implementation:
-    # Digest::MD5.hexdigest(get_signature_string(params, secret)).to_s
-
-    # XXX python implementation:
-    # hashlib.md5(get_signature_string(params, secret)).hexdigest()
-
-    return;
+    validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
+    my ($params, $secret) = @_;
+    # assumes utf8 encoded text, works fine because we use encode_json internally
+    return md5_hex( get_signature_string($params, $secret) );
 }
 
 ### class methods
@@ -39,7 +79,6 @@ sub new {
     my %self = (
         api_key => $key,
         secret  => $secret,
-        encoder => JSON::XS->new->ascii->allow_nonref,
         ua      => LWP::UserAgent->new,
     );
     $self{ua}->timeout($timeout) if $timeout;
@@ -171,13 +210,14 @@ sub api_post {
     return $self->_api_request( $action, $data, 'POST' );
 }
 
+# TODO enable
 # args: action, data
-sub api_delete {
-    validate_pos( @_, { type => OBJECT }, { type => SCALAR }, { type => HASHREF } );
-    my $self = shift;
-    my ( $action, $data ) = @_;
-    return $self->_api_request( $action, $data, 'DELETE' );
-}
+#sub api_delete {
+#    validate_pos( @_, { type => OBJECT }, { type => SCALAR }, { type => HASHREF } );
+#    my $self = shift;
+#    my ( $action, $data ) = @_;
+#    return $self->_api_request( $action, $data, 'DELETE' );
+#}
 
 # args: action, data, request_type
 sub _api_request {
@@ -190,7 +230,6 @@ sub _api_request {
 }
 
 # args: uri, data, method
-# TODO are any of these args optional?
 sub _http_request {
     validate_pos( @_, { type => OBJECT }, { type => SCALAR }, { type => HASHREF }, { type => SCALAR } );
     my $self = shift;
@@ -206,24 +245,28 @@ sub _prepare_json_payload {
     my $payload = {};
     $payload->{api_key} = $self->{api_key};
     $payload->{format}  = 'json';
-    # TODO convert $data into json
-    # XXX how are we doing this?
-    $payload->{json} = 'XXX';
+    # this gives us nice clean utf8 encoded json text
+    $payload->{json} = encode_json($data);
     $payload->{sig} = get_signature_hash( $payload, $self->{secret} );
     return $payload;
 }
+
+
+### XXX
+### OLD CODE
+### XXX
 
 sub _generate_sig {
     my $self = shift;
     my $args = shift;
     # api_key should already be in args
-    md5_hex( encode_utf8( decode_utf8( join( '', $self->{secret}, sort( values(%$args) ) ), Encode::FB_DEFAULT ) ) );
+    md5_hex( join( '', $self->{secret}, sort values %$args ) );
 }
 
 sub _call_api_raw {
     my ( $self, $method, $action, $json ) = @_;
 
-    $json = $self->{encoder}->encode($json) if ref $json;
+    $json = encode_json($json) if ref $json;
     my %data = ( api_key => $self->{api_key}, format => 'json', json => $json );
     $data{sig} = $self->_generate_sig( \%data );
 
@@ -246,7 +289,7 @@ sub _call_api_raw {
 sub call_api {
     my $self     = $_[0];
     my $response = &_call_api_raw;
-    $self->{encoder}->decode( $response->content );
+    return decode_json( $response->content );
 }
 
 sub _call_api_with_arguments {
@@ -263,13 +306,13 @@ sub _call_api_with_arguments {
     foreach my $i ( 0 .. $#{$arg_names} ) {
         $data{ $arg_names->[$i] } = $args->[$i] if defined $args->[$i];
     }
-    $self->_call_api( $method, $action, \%data );
+    $self->call_api( $method, $action, \%data );
 }
 
 sub getEmail {
     validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
     my ( $self, $email ) = @_;
-    $self->_call_api( 'POST', 'email', { email => $email } );
+    $self->call_api( 'POST', 'email', { email => $email } );
 }
 
 sub setEmail {
@@ -289,7 +332,7 @@ sub sendOld {
 sub getSend {
     validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
     my ( $self, $id ) = @_;
-    $self->_call_api( 'GET', 'send', { send_id => $id } );
+    $self->call_api( 'GET', 'send', { send_id => $id } );
 }
 
 sub scheduleBlast {
@@ -315,7 +358,7 @@ sub scheduleBlast {
 sub getBlast {
     validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
     my ( $self, $id ) = @_;
-    $self->_call_api( 'GET', 'blast', { blast_id => $id } );
+    $self->call_api( 'GET', 'blast', { blast_id => $id } );
 }
 
 sub copyTemplate {
