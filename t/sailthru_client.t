@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 4;
+use Test::More;
 
 use lib 'lib';
 
@@ -34,3 +34,5 @@ SKIP: {
 # testing invalid key response
 %invalid_key = %{ $fake_sc->getEmail('not_an_email') };
 is( $invalid_key{error}, 3, 'Testing error code on invalid key.' );
+
+done_testing;
