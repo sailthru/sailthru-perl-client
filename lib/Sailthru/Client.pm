@@ -1,5 +1,9 @@
 package Sailthru::Client;
 
+# TODO compare old methods and new methods
+# TODO deprecation warnings in old methods
+# TODO new implementation of send
+
 use strict;
 use warnings;
 
@@ -13,6 +17,23 @@ use Digest::MD5 'md5_hex';
 use Params::Validate qw( :all );
 use Encode qw( decode_utf8 encode_utf8 );
 
+### helper methods
+
+# args: params, secret
+sub get_signature_hash {
+    # TODO
+
+    # XXX ruby implementation:
+    # Digest::MD5.hexdigest(get_signature_string(params, secret)).to_s
+
+    # XXX python implementation:
+    # hashlib.md5(get_signature_string(params, secret)).hexdigest()
+
+    return;
+}
+
+### class methods
+
 sub new {
     my ( $class, $key, $secret, $timeout ) = @_;
     my %self = (
@@ -22,7 +43,174 @@ sub new {
         ua      => LWP::UserAgent->new,
     );
     $self{ua}->timeout($timeout) if $timeout;
-    bless \%self, $class;
+    return bless \%self, $class;
+}
+
+# args: template, email, vars (optional), options (optional), schedule_time
+# TODO are any of these args optional?
+sub send_new {
+    validate_pos( @_, { type => OBJECT }, { type => SCALAR }, { type => SCALAR }, 0, 0, 0 );
+    # TODO
+}
+
+# args: send_id
+sub get_send {
+    validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
+    my $self = shift;
+    my ($send_id) = @_;
+    return $self->api_get( 'send', { send_id => $send_id } );
+}
+
+# args: email
+sub get_email {
+    validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
+    my $self = shift;
+    my ($email) = @_;
+    return $self->api_get( 'email', { email => $email } );
+}
+
+# args: email, vars, lists, templates
+sub set_email {
+    validate_pos(
+        @_,
+        { type => OBJECT },
+        { type => SCALAR },
+        { type => HASHREF, default => {} },
+        { type => HASHREF, default => {} },
+        { type => HASHREF, default => {} }
+    );
+    my $self = shift;
+    my ( $email, $vars, $lists, $templates ) = @_;
+    my $data = {};
+    $data->{email}     = $email;
+    $data->{vars}      = $vars;
+    $data->{lists}     = $lists;
+    $data->{templates} = $templates;
+    return $self->api_post( 'email', $data );
+}
+
+# args: name, list, schedule_time, from_name, from_email, subject, content_html, content_text, options
+sub schedule_blast {
+    validate_pos(
+        @_,
+        { type => OBJECT },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => HASHREF, default => {} },
+    );
+    my $self = shift;
+    my ( $name, $list, $schedule_time, $from_name, $from_email, $subject, $content_html, $content_text, $options ) = @_;
+    my $data = $options;
+    $data->{name}          = $name;
+    $data->{list}          = $list;
+    $data->{schedule_time} = $schedule_time;
+    $data->{from_name}     = $from_name;
+    $data->{from_email}    = $from_email;
+    $data->{subject}       = $subject;
+    $data->{content_html}  = $content_html;
+    $data->{content_text}  = $content_text;
+    return $self->api_post( 'blast', $data );
+}
+
+# args: template, list, schedule_time, options
+sub schedule_blast_from_template {
+    validate_pos(
+        @_,
+        { type => OBJECT },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => HASHREF, default => {} },
+    );
+    my $self = shift;
+    my ( $template, $list, $schedule_time, $options ) = @_;
+    my $data = $options;
+    $data->{copy_template} = $template;
+    $data->{list}          = $list;
+    $data->{schedule_time} = $schedule_time;
+    return $self->api_post( 'blast', $data );
+
+}
+
+# args: blast_id
+sub get_blast {
+    validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
+    my $self = shift;
+    my ($blast_id) = @_;
+    return $self->api_get( 'blast', { blast_id => $blast_id } );
+}
+
+# args: template_name
+sub get_template {
+    validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
+    my $self = shift;
+    my ($template_name) = @_;
+    return $self->api_get( 'template', { template => $template_name } );
+}
+
+# args: action, data
+sub api_get {
+    validate_pos( @_, { type => OBJECT }, { type => SCALAR }, { type => HASHREF } );
+    my $self = shift;
+    my ( $action, $data ) = @_;
+    return $self->_api_request( $action, $data, 'GET' );
+}
+
+# args: action, data
+# TODO: optional binary_key arg
+sub api_post {
+    validate_pos( @_, { type => OBJECT }, { type => SCALAR }, { type => HASHREF } );
+    my $self = shift;
+    my ( $action, $data ) = @_;
+    return $self->_api_request( $action, $data, 'POST' );
+}
+
+# args: action, data
+sub api_delete {
+    validate_pos( @_, { type => OBJECT }, { type => SCALAR }, { type => HASHREF } );
+    my $self = shift;
+    my ( $action, $data ) = @_;
+    return $self->_api_request( $action, $data, 'DELETE' );
+}
+
+# args: action, data, request_type
+sub _api_request {
+    validate_pos( @_, { type => OBJECT }, { type => SCALAR }, { type => HASHREF }, { type => SCALAR } );
+    my $self = shift;
+    my ( $action, $data, $request_type ) = @_;
+    $data = $self->_prepare_json_payload($data);
+    my $action_uri = API_URI . $action;
+    return $self->_http_request( $action_uri, $data, $request_type );
+}
+
+# args: uri, data, method
+# TODO are any of these args optional?
+sub _http_request {
+    validate_pos( @_, { type => OBJECT }, { type => SCALAR }, { type => HASHREF }, { type => SCALAR } );
+    my $self = shift;
+    my ( $uri, $data, $method ) = @_;
+    # TODO the rest of this...
+}
+
+# args: data
+sub _prepare_json_payload {
+    validate_pos( @_, { type => OBJECT }, { type => HASHREF } );
+    my $self    = shift;
+    my ($data)  = @_;
+    my $payload = {};
+    $payload->{api_key} = $self->{api_key};
+    $payload->{format}  = 'json';
+    # TODO convert $data into json
+    # XXX how are we doing this?
+    $payload->{json} = 'XXX';
+    $payload->{sig} = get_signature_hash( $payload, $self->{secret} );
+    return $payload;
 }
 
 sub _generate_sig {
@@ -55,7 +243,7 @@ sub _call_api_raw {
     return $response;
 }
 
-sub _call_api {
+sub call_api {
     my $self     = $_[0];
     my $response = &_call_api_raw;
     $self->{encoder}->decode( $response->content );
@@ -79,27 +267,27 @@ sub _call_api_with_arguments {
 }
 
 sub getEmail {
-    validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
+    validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
     my ( $self, $email ) = @_;
     $self->_call_api( 'POST', 'email', { email => $email } );
 }
 
 sub setEmail {
-    validate_pos( @_, { type => HASHREF }, { type => SCALAR }, 0, 0, 0 );
+    validate_pos( @_, { type => OBJECT }, { type => SCALAR }, 0, 0, 0 );
     my $self   = shift;
     my @params = qw(email vars lists templates);
     $self->_call_api_with_arguments( 'POST', 'email', \@params, \@_ );
 }
 
-sub send {
-    validate_pos( @_, { type => HASHREF }, { type => SCALAR }, { type => SCALAR }, 0, 0, 0 );
+sub sendOld {
+    validate_pos( @_, { type => OBJECT }, { type => SCALAR }, { type => SCALAR }, 0, 0, 0 );
     my $self   = shift;
     my @params = qw(email vars lists options schedule_time);
     $self->_call_api_with_arguments( 'POST', 'send', \@params, \@_ );
 }
 
 sub getSend {
-    validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
+    validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
     my ( $self, $id ) = @_;
     $self->_call_api( 'GET', 'send', { send_id => $id } );
 }
@@ -107,7 +295,7 @@ sub getSend {
 sub scheduleBlast {
     validate_pos(
         @_,
-        { type => HASHREF },
+        { type => OBJECT },
         { type => SCALAR },
         { type => SCALAR },
         { type => SCALAR },
@@ -125,7 +313,7 @@ sub scheduleBlast {
 }
 
 sub getBlast {
-    validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
+    validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
     my ( $self, $id ) = @_;
     $self->_call_api( 'GET', 'blast', { blast_id => $id } );
 }
@@ -133,7 +321,7 @@ sub getBlast {
 sub copyTemplate {
     validate_pos(
         @_,
-        { type => HASHREF },
+        { type => OBJECT },
         { type => SCALAR },
         { type => SCALAR },
         { type => SCALAR },
@@ -149,16 +337,9 @@ sub copyTemplate {
 }
 
 sub getTemplate {
-    validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
+    validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
     my ( $self, $t ) = @_;
     $self->call_api( 'GET', 'template', { template => $t } );
-}
-
-sub importContacts {
-    validate_pos( @_, { type => HASHREF }, { type => SCALAR }, 0 );
-    my $self   = shift;
-    my @params = qw(email password include_names);
-    $self->_call_api_with_arguments( 'POST', 'contacts', \@params, \@_ );
 }
 
 =head1 NAME
@@ -261,11 +442,6 @@ Allows you to use an existing template to send out a blast.
 =item B<getTemplate>( $template_name )
 
 Retrieves information about the specified template
-
-=item B<importContacts>( $email, $password )
-
-Import contacts from major providers.
-Takes email, password as strings. By default does not include names. Pass 1 as third argument to include names.
 
 =back
 
