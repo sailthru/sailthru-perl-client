@@ -210,14 +210,13 @@ sub api_post {
     return $self->_api_request( $action, $data, 'POST' );
 }
 
-# TODO enable
 # args: action, data
-#sub api_delete {
-#    validate_pos( @_, { type => OBJECT }, { type => SCALAR }, { type => HASHREF } );
-#    my $self = shift;
-#    my ( $action, $data ) = @_;
-#    return $self->_api_request( $action, $data, 'DELETE' );
-#}
+sub api_delete {
+    validate_pos( @_, { type => OBJECT }, { type => SCALAR }, { type => HASHREF } );
+    my $self = shift;
+    my ( $action, $data ) = @_;
+    return $self->_api_request( $action, $data, 'DELETE' );
+}
 
 # args: action, data, request_type
 sub _api_request {

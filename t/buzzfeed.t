@@ -9,7 +9,7 @@ use_ok('Sailthru::Client');
 
 my ( $api_key, $secret ) = ( $ENV{SAILTHRU_KEY}, $ENV{SAILTHRU_SECRET} );
 
-#resources to use for the test.  These will be automatically created/deleted on Sailthru
+# resources to use for the test.  These will be automatically created/deleted on Sailthru
 use constant LIST     => 'CPAN test list';
 use constant EMAIL    => 'sc-cpan@example.com';
 use constant TEMPLATE => 'CPAN Test';
@@ -22,19 +22,19 @@ SKIP: {
     # Grab template source/preview
     ############################################################
 
-    #create template (or overwrite if already exists)
+    # create template (or overwrite if already exists)
     my @lines = <DATA>;
     close DATA;
     my $create_template = $sc->call_api( 'POST', 'template', { template => TEMPLATE, content_html => "@lines" } );
     is( $create_template->{error}, undef, "no error creating template" );
 
-    #valid source
+    # valid source
     my $source = $sc->call_api( 'POST', 'blast', { copy_template => TEMPLATE } );
     like( $source->{content_html}, qr/Hey/,       "got right result" );
     like( $source->{content_html}, qr/\Q{email}/, "has variable" );
     unlike( $source->{content_html}, qr/\Q@{[EMAIL]}/, "didn't find email" );
 
-    #valid preview
+    # valid preview
     my $preview = $sc->call_api(
         'POST',
         'preview',
@@ -48,7 +48,7 @@ SKIP: {
     unlike( $preview->{content_html}, qr/\Q{email}/, "doesn't have variable" );
     like( $preview->{content_html}, qr/\Q@{[EMAIL]}/, "found email" );
 
-    #delete template, rerun preview, look for error.
+    # delete template, rerun preview, look for error.
     $sc->call_api( 'DELETE', 'template', { template => TEMPLATE } );
 
     my $no_template = $sc->call_api(
@@ -68,7 +68,7 @@ SKIP: {
     ############################################################
     my $email;
 
-    #try to create list, in case it doesn't exist (will delete at end, anyway) and verify it's there
+    # try to create list, in case it doesn't exist (will delete at end, anyway) and verify it's there
     $email = $sc->call_api( 'POST', 'list', { list => LIST } );
     is( $email->{errormsg}, undef, "No error creating list" );
     $email = $sc->call_api( 'GET', 'list', { list => LIST } );
@@ -80,17 +80,17 @@ SKIP: {
     $email = $sc->call_api( 'GET', 'email', { email => EMAIL() } );
     is( $email->{lists}{ LIST() }, 1, 'is on list' );
 
-    #rm via call_api
+    # remove via call_api
     $sc->call_api( 'POST', 'email', { email => EMAIL(), lists => { LIST() => 0 } } );
     $email = $sc->call_api( 'GET', 'email', { email => EMAIL() } );
     is( $email->{lists}{ LIST() }, undef, 'is not on list' );
 
-    #add via setEmail/getEmail
+    # add via setEmail/getEmail
     $sc->setEmail( EMAIL(), {}, { LIST() => 1 } );
     $email = $sc->getEmail(EMAIL);
     is( $email->{lists}{ LIST() }, 1, 'is on list' );
 
-    #rm via setEmail/getEmail
+    # remove via setEmail/getEmail
     $sc->setEmail( EMAIL(), {}, { LIST() => 0 } );
     $email = $sc->getEmail(EMAIL);
     is( $email->{lists}{ LIST() }, undef, 'is not on list' );
@@ -118,4 +118,3 @@ bye, {email}
 <p><small>If you believe this has been sent to you in error, please safely <a href="{optout_confirm_url}">unsubscribe</a>.</small></p>
 </body>
 </html>
-
