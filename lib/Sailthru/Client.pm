@@ -4,10 +4,8 @@ package Sailthru::Client;
 # TODO deprecation warnings in old methods
 # TODO implement old methods with new api_* methods
 # TODO new implementation of send
-# TODO prefer ascii or utf8 for json? how does that affect md5?
-# TODO depreceate _generate_sig
-# TODO depreceate *call_api* methods
-# TODO where does my json decoding happen?
+# TODO deprecate _generate_sig
+# TODO deprecate *call_api* methods
 
 use strict;
 use warnings;
@@ -59,7 +57,7 @@ sub extract_param_values {
 # args: params, secret
 sub get_signature_string {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
-    my ($params, $secret) = @_;
+    my ( $params, $secret ) = @_;
     my $param_values = extract_param_values($params);
     return join '', $secret, sort @{$param_values};
 }
@@ -67,9 +65,9 @@ sub get_signature_string {
 # args: params, secret
 sub get_signature_hash {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
-    my ($params, $secret) = @_;
+    my ( $params, $secret ) = @_;
     # assumes utf8 encoded text, works fine because we use encode_json internally
-    return md5_hex( get_signature_string($params, $secret) );
+    return md5_hex( get_signature_string( $params, $secret ) );
 }
 
 ### class methods
@@ -82,6 +80,7 @@ sub new {
         ua      => LWP::UserAgent->new,
     );
     $self{ua}->timeout($timeout) if $timeout;
+    $self{ua}->default_header( 'User-Agent' => 'Sailthru API Perl Client' );
     return bless \%self, $class;
 }
 
@@ -225,7 +224,8 @@ sub _api_request {
     my ( $action, $data, $request_type ) = @_;
     $data = $self->_prepare_json_payload($data);
     my $action_uri = API_URI . $action;
-    return $self->_http_request( $action_uri, $data, $request_type );
+    my $response = $self->_http_request( $action_uri, $data, $request_type );
+    return decode_json( $response->content );
 }
 
 # args: uri, data, method
@@ -233,7 +233,23 @@ sub _http_request {
     validate_pos( @_, { type => OBJECT }, { type => SCALAR }, { type => HASHREF }, { type => SCALAR } );
     my $self = shift;
     my ( $uri, $data, $method ) = @_;
-    # TODO the rest of this...
+    $uri = URI->new( $uri );
+    my $response;
+    if ( $method eq 'GET' ) {
+        $uri->query_form($data);
+        $response = $self->{ua}->get($uri);
+    }
+    elsif ( $method eq 'POST' ) {
+        $response = $self->{ua}->post( $uri, $data );
+    }
+    elsif ( $method eq 'DELETE' ) {
+        $uri->query_form($data);
+        $response = $self->{ua}->delete($uri);
+    }
+    else {
+        croak "Invalid method: $method";
+    }
+    return $response;
 }
 
 # args: data
@@ -249,7 +265,6 @@ sub _prepare_json_payload {
     $payload->{sig} = get_signature_hash( $payload, $self->{secret} );
     return $payload;
 }
-
 
 ### XXX
 ### OLD CODE
@@ -269,21 +284,24 @@ sub _call_api_raw {
     my %data = ( api_key => $self->{api_key}, format => 'json', json => $json );
     $data{sig} = $self->_generate_sig( \%data );
 
-	my $response;
-	if ($method eq 'GET') {
-		my $url = URI->new(API_URI . $action);
-		$url->query_form(%data);
-		$response = $self->{ua}->get($url);
-	} elsif ($method eq 'POST') {
-		$response = $self->{ua}->post(API_URI . $action, \%data);
-	} elsif ($method eq 'DELETE') {
-		#$response = $self->{ua}->delete(API_URI . $action, \%data);
-		my $url = URI->new(API_URI . $action);
-		$url->query_form(%data);
-		$response = $self->{ua}->delete($url);
-	} else {
-		croak "Invalid method: $method";
-	}
+    my $response;
+    if ( $method eq 'GET' ) {
+        my $url = URI->new( API_URI . $action );
+        $url->query_form(%data);
+        $response = $self->{ua}->get($url);
+    }
+    elsif ( $method eq 'POST' ) {
+        $response = $self->{ua}->post( API_URI . $action, \%data );
+    }
+    elsif ( $method eq 'DELETE' ) {
+        #$response = $self->{ua}->delete(API_URI . $action, \%data);
+        my $url = URI->new( API_URI . $action );
+        $url->query_form(%data);
+        $response = $self->{ua}->delete($url);
+    }
+    else {
+        croak "Invalid method: $method";
+    }
 
     return $response;
 }
@@ -314,9 +332,10 @@ sub _call_api_with_arguments {
 sub getEmail {
     validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
     my ( $self, $email ) = @_;
-    $self->call_api( 'POST', 'email', { email => $email } );
+    $self->api_post( 'email', { email => $email } );
 }
 
+# TODO update to api_post
 sub setEmail {
     validate_pos( @_, { type => OBJECT }, { type => SCALAR }, 0, 0, 0 );
     my $self   = shift;
@@ -324,6 +343,7 @@ sub setEmail {
     $self->_call_api_with_arguments( 'POST', 'email', \@params, \@_ );
 }
 
+# TODO update to api_post
 sub sendOld {
     validate_pos( @_, { type => OBJECT }, { type => SCALAR }, { type => SCALAR }, 0, 0, 0 );
     my $self   = shift;
@@ -334,9 +354,10 @@ sub sendOld {
 sub getSend {
     validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
     my ( $self, $id ) = @_;
-    $self->call_api( 'GET', 'send', { send_id => $id } );
+    $self->api_get( 'send', { send_id => $id } );
 }
 
+# TODO update to api_post
 sub scheduleBlast {
     validate_pos(
         @_,
@@ -360,9 +381,10 @@ sub scheduleBlast {
 sub getBlast {
     validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
     my ( $self, $id ) = @_;
-    $self->call_api( 'GET', 'blast', { blast_id => $id } );
+    $self->api_get( 'blast', { blast_id => $id } );
 }
 
+# TODO update to api_post
 sub copyTemplate {
     validate_pos(
         @_,
@@ -384,7 +406,7 @@ sub copyTemplate {
 sub getTemplate {
     validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
     my ( $self, $t ) = @_;
-    $self->call_api( 'GET', 'template', { template => $t } );
+    $self->api_get( 'template', { template => $t } );
 }
 
 =head1 NAME
