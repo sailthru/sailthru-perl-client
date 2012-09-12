@@ -39,11 +39,11 @@ $sig = Sailthru::Client::get_signature_hash( $args, $secret );
 is( $sig, '62c9f19c053146634d94d531e2492438', 'get_signature_hash with JSON' );
 
 $secret = '123456';
-$args = {
-    'unix' => ['Linux', 'Mac', 'Solaris'],
+$args   = {
+    'unix'    => [ 'Linux', 'Mac', 'Solaris' ],
     'windows' => 'None'
 };
-my @expected_list = sort ('Linux', 'Mac', 'Solaris', 'None');
+my @expected_list = sort ( 'Linux', 'Mac', 'Solaris', 'None' );
 my $expected = $secret . join '', @expected_list;
 my $signature_string = Sailthru::Client::get_signature_string( $args, $secret );
 is( $signature_string, $expected, 'get_signature_string from nested data structure' );
