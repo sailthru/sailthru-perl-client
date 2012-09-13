@@ -321,7 +321,7 @@ sub _prepare_json_payload {
 sub getEmail {
     my $self = shift;
     warnings::warnif( 'deprecated', 'getEmail is deprecated, use get_email instead' );
-    $self->get_email(@_);
+    return $self->get_email(@_);
 }
 
 sub setEmail {
@@ -333,19 +333,19 @@ sub setEmail {
 sub getSend {
     my $self = shift;
     warnings::warnif( 'deprecated', 'getSend is deprecated, use get_send instead' );
-    $self->get_send(@_);
+    return $self->get_send(@_);
 }
 
 sub scheduleBlast {
     my $self = shift;
     warnings::warnif( 'deprecated', 'scheduleBlast is deprecated, use schedule_blast instead' );
-    $self->schedule_blast(@_);
+    return $self->schedule_blast(@_);
 }
 
 sub getBlast {
     my $self = shift;
     warnings::warnif( 'deprecated', 'getBlast is deprecated, use get_blast instead' );
-    $self->get_blast(@_);
+    return $self->get_blast(@_);
 }
 
 sub copyTemplate {
@@ -375,8 +375,15 @@ sub copyTemplate {
 sub getTemplate {
     my $self = shift;
     warnings::warnif( 'deprecated', 'getTemplate is deprecated, use get_template instead' );
-    $self->get_template(@_);
+    return $self->get_template(@_);
 }
+
+
+1;
+
+# TODO update documentation
+
+__END__
 
 =head1 NAME
 
@@ -387,7 +394,7 @@ Sailthru::Client - Perl module for accessing Sailthru's API
  use Sailthru::Client;
 
  # Optionally include timeout in seconds as the third parameter.
- $tm = Sailthru::Client->new('api_key','secret');
+ $tm = Sailthru::Client->new('api_key', 'secret');
 
  %vars = (
     name => "Joe Example",
@@ -396,7 +403,7 @@ Sailthru::Client - Perl module for accessing Sailthru's API
  );
  %options = ( reply_to => "your reply_to header");
 
- $tm->send("template_name",'example@example.com',\%vars,\%options);
+ $tm->send("template_name", 'example@example.com', \%vars, \%options);
 
 =head1 DESCRIPTION
 
@@ -507,7 +514,3 @@ it under the same terms as Perl itself, either Perl version 5.10.0 or,
 at your option, any later version of Perl 5 you may have available.
 
 =cut
-
-1;
-
-1;
