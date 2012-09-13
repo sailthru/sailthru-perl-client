@@ -1,17 +1,9 @@
 package Sailthru::Client;
 
-# TODO compare old methods and new methods
 # TODO deprecation warnings in old methods
-# TODO implement old methods with new api_* methods
-# TODO new implementation of send
-# TODO deprecate _generate_sig
-# TODO deprecate *call_api* methods
 
 use strict;
 use warnings;
-
-our $VERSION = '2.000';
-use constant API_URI => 'https://api.sailthru.com/';
 
 use Carp;
 use JSON::XS;
@@ -19,8 +11,14 @@ use LWP::UserAgent;
 use Digest::MD5 qw( md5_hex );
 use Params::Validate qw( :all );
 use Encode qw( decode_utf8 encode_utf8 );
+use Readonly;
 
-### helper methods
+our $VERSION = '2.000';
+Readonly my $API_URI => 'https://api.sailthru.com/';
+
+#
+# helpers
+#
 
 # Every request must also generate a signature hash called sig according to the
 # following rules:
@@ -31,7 +29,8 @@ use Encode qw( decode_utf8 encode_utf8 );
 # * generate an MD5 hash of this string and use this as sig
 # * now generate your URL-encoded query string from your parameters plus sig
 
-# args: params
+# args:
+# * params
 sub extract_param_values {
     my ($params) = @_;
     my $values = [];
@@ -54,7 +53,9 @@ sub extract_param_values {
     return $values;
 }
 
-# args: params, secret
+# args:
+# * params - hashref
+# * secret - scalar
 sub get_signature_string {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
     my ( $params, $secret ) = @_;
@@ -62,7 +63,9 @@ sub get_signature_string {
     return join '', $secret, sort @{$param_values};
 }
 
-# args: params, secret
+# args:
+# * params - hashref
+# * secret - scalar
 sub get_signature_hash {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
     my ( $params, $secret ) = @_;
@@ -70,68 +73,104 @@ sub get_signature_hash {
     return md5_hex( get_signature_string( $params, $secret ) );
 }
 
-### class methods
+#
+# public api
+#
 
 sub new {
     my ( $class, $key, $secret, $timeout ) = @_;
-    my %self = (
+    my $self = {
         api_key => $key,
         secret  => $secret,
         ua      => LWP::UserAgent->new,
-    );
-    $self{ua}->timeout($timeout) if $timeout;
-    $self{ua}->default_header( 'User-Agent' => 'Sailthru API Perl Client' );
-    return bless \%self, $class;
+    };
+    $self->{ua}->timeout($timeout) if $timeout;
+    $self->{ua}->default_header( 'User-Agent' => "Sailthru API Perl Client $VERSION" );
+    return bless $self, $class;
 }
 
-# args: template, email, vars (optional), options (optional), schedule_time
-# TODO are any of these args optional?
-sub send_new {
-    validate_pos( @_, { type => OBJECT }, { type => SCALAR }, { type => SCALAR }, 0, 0, 0 );
-    # TODO
-}
-
-# args: send_id
-sub get_send {
-    validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
+# args:
+#
+# * template - scalar
+# * email - scalar
+# * vars - hashref (optional)
+# * options - hashref (optional)
+# * schedule_time - scalar (optional)
+sub send {
     my $self = shift;
+    validate_pos(
+        @_,
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => HASHREF, default => {} },
+        { type => HASHREF, default => {} },
+        { type => SCALAR, default => undef }
+    );
+    my ( $template, $email, $vars, $options, $schedule_time ) = @_;
+    my $data = {};
+    $data->{template}      = $template;
+    $data->{email}         = $email;
+    $data->{vars}          = $vars if keys %{$vars};
+    $data->{options}       = $options if keys %{$options};
+    $data->{schedule_time} = $schedule_time if $schedule_time;
+    return $self->api_post( 'send', $data );
+}
+
+# args:
+# * send_id - scalar
+sub get_send {
+    my $self = shift;
+    validate_pos( @_, { type => SCALAR } );
     my ($send_id) = @_;
     return $self->api_get( 'send', { send_id => $send_id } );
 }
 
-# args: email
+# args:
+# * email - scalar
 sub get_email {
-    validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
     my $self = shift;
+    validate_pos( @_, { type => SCALAR } );
     my ($email) = @_;
     return $self->api_get( 'email', { email => $email } );
 }
 
-# args: email, vars, lists, templates
+# args:
+# * email - scalar
+# * vars - hashref (optional)
+# * lists - hashref (optional)
+# * templates - hashref (optional)
 sub set_email {
+    my $self = shift;
     validate_pos(
         @_,
-        { type => OBJECT },
         { type => SCALAR },
         { type => HASHREF, default => {} },
         { type => HASHREF, default => {} },
         { type => HASHREF, default => {} }
     );
-    my $self = shift;
     my ( $email, $vars, $lists, $templates ) = @_;
     my $data = {};
     $data->{email}     = $email;
-    $data->{vars}      = $vars;
-    $data->{lists}     = $lists;
-    $data->{templates} = $templates;
+    $data->{vars}      = $vars if keys %{$vars};
+    $data->{lists}     = $lists if keys %{$lists};
+    $data->{templates} = $templates if keys %{$templates};
     return $self->api_post( 'email', $data );
 }
 
-# args: name, list, schedule_time, from_name, from_email, subject, content_html, content_text, options
+# args:
+# * name - scalar
+# * list - scalar
+# * schedule_time - scalar
+# * from_name - scalar
+# * from_email - scalar
+# * subject - scalar
+# * content_html - scalar
+# * content_text - scalar
+# * options - hashref (optional)
 sub schedule_blast {
+    my $self = shift;
     validate_pos(
         @_,
-        { type => OBJECT },
         { type => SCALAR },
         { type => SCALAR },
         { type => SCALAR },
@@ -142,7 +181,6 @@ sub schedule_blast {
         { type => SCALAR },
         { type => HASHREF, default => {} },
     );
-    my $self = shift;
     my ( $name, $list, $schedule_time, $from_name, $from_email, $subject, $content_html, $content_text, $options ) = @_;
     my $data = $options;
     $data->{name}          = $name;
@@ -156,17 +194,14 @@ sub schedule_blast {
     return $self->api_post( 'blast', $data );
 }
 
-# args: template, list, schedule_time, options
+# args:
+# * template - scalar
+# * list - scalar
+# * schedule_time - scalar
+# * options - hashref (optional)
 sub schedule_blast_from_template {
-    validate_pos(
-        @_,
-        { type => OBJECT },
-        { type => SCALAR },
-        { type => SCALAR },
-        { type => SCALAR },
-        { type => HASHREF, default => {} },
-    );
     my $self = shift;
+    validate_pos( @_, { type => SCALAR }, { type => SCALAR }, { type => SCALAR }, { type => HASHREF, default => {} }, );
     my ( $template, $list, $schedule_time, $options ) = @_;
     my $data = $options;
     $data->{copy_template} = $template;
@@ -176,64 +211,78 @@ sub schedule_blast_from_template {
 
 }
 
-# args: blast_id
+# args:
+# * blast_id - scalar
 sub get_blast {
-    validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
     my $self = shift;
+    validate_pos( @_, { type => SCALAR } );
     my ($blast_id) = @_;
     return $self->api_get( 'blast', { blast_id => $blast_id } );
 }
 
-# args: template_name
+# args:
+# * template_name - scalar
 sub get_template {
-    validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
     my $self = shift;
+    validate_pos( @_, { type => SCALAR } );
     my ($template_name) = @_;
     return $self->api_get( 'template', { template => $template_name } );
 }
 
-# args: action, data
+# args:
+# * action - scalar
+# * data - hashref
 sub api_get {
-    validate_pos( @_, { type => OBJECT }, { type => SCALAR }, { type => HASHREF } );
     my $self = shift;
+    validate_pos( @_, { type => SCALAR }, { type => HASHREF } );
     my ( $action, $data ) = @_;
     return $self->_api_request( $action, $data, 'GET' );
 }
 
-# args: action, data
-# TODO: optional binary_key arg
+# args:
+# * action - scalar
+# * data - hashref
+# * TODO: optional binary_key arg
 sub api_post {
-    validate_pos( @_, { type => OBJECT }, { type => SCALAR }, { type => HASHREF } );
     my $self = shift;
+    validate_pos( @_, { type => SCALAR }, { type => HASHREF } );
     my ( $action, $data ) = @_;
     return $self->_api_request( $action, $data, 'POST' );
 }
 
-# args: action, data
+# args:
+# * action - scalar
+# * data - hashref
 sub api_delete {
-    validate_pos( @_, { type => OBJECT }, { type => SCALAR }, { type => HASHREF } );
     my $self = shift;
+    validate_pos( @_, { type => SCALAR }, { type => HASHREF } );
     my ( $action, $data ) = @_;
     return $self->_api_request( $action, $data, 'DELETE' );
 }
 
-# args: action, data, request_type
+# args:
+# * action - scalar
+# * data - hashref
+# * request_type - scalar
 sub _api_request {
-    validate_pos( @_, { type => OBJECT }, { type => SCALAR }, { type => HASHREF }, { type => SCALAR } );
     my $self = shift;
+    validate_pos( @_, { type => SCALAR }, { type => HASHREF }, { type => SCALAR } );
     my ( $action, $data, $request_type ) = @_;
     $data = $self->_prepare_json_payload($data);
-    my $action_uri = API_URI . $action;
+    my $action_uri = $API_URI . $action;
     my $response = $self->_http_request( $action_uri, $data, $request_type );
     return decode_json( $response->content );
 }
 
-# args: uri, data, method
+# args:
+# * uri - scalar
+# * data - hashref
+# * method - scalar
 sub _http_request {
-    validate_pos( @_, { type => OBJECT }, { type => SCALAR }, { type => HASHREF }, { type => SCALAR } );
     my $self = shift;
+    validate_pos( @_, { type => SCALAR }, { type => HASHREF }, { type => SCALAR } );
     my ( $uri, $data, $method ) = @_;
-    $uri = URI->new( $uri );
+    $uri = URI->new($uri);
     my $response;
     if ( $method eq 'GET' ) {
         $uri->query_form($data);
@@ -252,11 +301,12 @@ sub _http_request {
     return $response;
 }
 
-# args: data
+# args:
+# * data - hashref
 sub _prepare_json_payload {
-    validate_pos( @_, { type => OBJECT }, { type => HASHREF } );
-    my $self    = shift;
-    my ($data)  = @_;
+    my $self = shift;
+    validate_pos( @_, { type => HASHREF } );
+    my ($data) = @_;
     my $payload = {};
     $payload->{api_key} = $self->{api_key};
     $payload->{format}  = 'json';
@@ -267,146 +317,60 @@ sub _prepare_json_payload {
 }
 
 ### XXX
-### OLD CODE
+### DEPRECATED METHODS
 ### XXX
 
-sub _generate_sig {
-    my $self = shift;
-    my $args = shift;
-    # api_key should already be in args
-    md5_hex( join( '', $self->{secret}, sort values %$args ) );
-}
-
-sub _call_api_raw {
-    my ( $self, $method, $action, $json ) = @_;
-
-    $json = encode_json($json) if ref $json;
-    my %data = ( api_key => $self->{api_key}, format => 'json', json => $json );
-    $data{sig} = $self->_generate_sig( \%data );
-
-    my $response;
-    if ( $method eq 'GET' ) {
-        my $url = URI->new( API_URI . $action );
-        $url->query_form(%data);
-        $response = $self->{ua}->get($url);
-    }
-    elsif ( $method eq 'POST' ) {
-        $response = $self->{ua}->post( API_URI . $action, \%data );
-    }
-    elsif ( $method eq 'DELETE' ) {
-        #$response = $self->{ua}->delete(API_URI . $action, \%data);
-        my $url = URI->new( API_URI . $action );
-        $url->query_form(%data);
-        $response = $self->{ua}->delete($url);
-    }
-    else {
-        croak "Invalid method: $method";
-    }
-
-    return $response;
-}
-
-sub call_api {
-    my $self     = $_[0];
-    my $response = &_call_api_raw;
-    return decode_json( $response->content );
-}
-
-sub _call_api_with_arguments {
-    my ( $self, $method, $action, $arg_names, $args ) = @_;
-    my %data;
-
-    if ( @$args > @$arg_names ) {
-        my $opts = pop @$args;
-        %data = %$opts;
-    }
-
-    croak "Extra arguments specified" if @$args > @$arg_names;
-
-    foreach my $i ( 0 .. $#{$arg_names} ) {
-        $data{ $arg_names->[$i] } = $args->[$i] if defined $args->[$i];
-    }
-    $self->call_api( $method, $action, \%data );
-}
-
 sub getEmail {
-    validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
-    my ( $self, $email ) = @_;
-    $self->api_post( 'email', { email => $email } );
+    my $self = shift;
+    $self->get_email(@_);
 }
 
-# TODO update to api_post
 sub setEmail {
-    validate_pos( @_, { type => OBJECT }, { type => SCALAR }, 0, 0, 0 );
-    my $self   = shift;
-    my @params = qw(email vars lists templates);
-    $self->_call_api_with_arguments( 'POST', 'email', \@params, \@_ );
-}
-
-# TODO update to api_post
-sub sendOld {
-    validate_pos( @_, { type => OBJECT }, { type => SCALAR }, { type => SCALAR }, 0, 0, 0 );
-    my $self   = shift;
-    my @params = qw(email vars lists options schedule_time);
-    $self->_call_api_with_arguments( 'POST', 'send', \@params, \@_ );
+    my $self = shift;
+    return $self->set_email(@_);
 }
 
 sub getSend {
-    validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
-    my ( $self, $id ) = @_;
-    $self->api_get( 'send', { send_id => $id } );
+    my $self = shift;
+    $self->get_send(@_);
 }
 
-# TODO update to api_post
 sub scheduleBlast {
-    validate_pos(
-        @_,
-        { type => OBJECT },
-        { type => SCALAR },
-        { type => SCALAR },
-        { type => SCALAR },
-        { type => SCALAR },
-        { type => SCALAR },
-        { type => SCALAR },
-        { type => SCALAR },
-        { type => SCALAR },
-        0
-    );
-
-    my $self   = shift;
-    my @params = qw(name list schedule_time from_name from_email subject content_html content_text);
-    $self->_call_api_with_arguments( 'POST', 'blast', \@params, \@_ );
+    my $self = shift;
+    $self->schedule_blast(@_);
 }
 
 sub getBlast {
-    validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
-    my ( $self, $id ) = @_;
-    $self->api_get( 'blast', { blast_id => $id } );
+    my $self = shift;
+    $self->get_blast(@_);
 }
 
-# TODO update to api_post
 sub copyTemplate {
+    my $self = shift;
     validate_pos(
         @_,
-        { type => OBJECT },
         { type => SCALAR },
         { type => SCALAR },
         { type => SCALAR },
         { type => SCALAR },
         { type => SCALAR },
         { type => SCALAR },
-        0
+        { type => HASHREF, default => {} }
     );
-
-    my $self   = shift;
-    my @params = qw(copy_template data_feed_url setup name schedule_time list);
-    $self->_call_api_with_arguments( 'POST', 'blast', \@params, \@_ );
+    my ( $template, $data_feed, $setup, $subject_line, $schedule_time, $list, $options ) = @_;
+    my $data = $options;
+    $data->{copy_template} = $template;
+    $data->{data_feed_url} = $data_feed;
+    $data->{setup}         = $setup;
+    $data->{name}          = $subject_line;
+    $data->{schedule_time} = $schedule_time;
+    $data->{list}          = $list;
+    return $self->api_post( 'blast', $data );
 }
 
 sub getTemplate {
-    validate_pos( @_, { type => OBJECT }, { type => SCALAR } );
-    my ( $self, $t ) = @_;
-    $self->api_get( 'template', { template => $t } );
+    my $self = shift;
+    $self->get_template(@_);
 }
 
 =head1 NAME
