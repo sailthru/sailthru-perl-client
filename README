@@ -18,14 +18,13 @@ DEPENDENCIES
 
 This module requires these other modules and libraries:
 
-Encode
 Digest::MD5
-HTTP::Request
 JSON::XS
-LWP
 LWP::Protocol::https
+LWP::UserAgent
 Params::Validate
-URI::Escape
+Readonly
+URI
 
 COPYRIGHT AND LICENSE
 
