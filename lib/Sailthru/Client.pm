@@ -3,6 +3,7 @@ package Sailthru::Client;
 use strict;
 use warnings;
 
+use Carp;
 use JSON::XS;
 use LWP::UserAgent;
 use Digest::MD5 qw( md5_hex );
