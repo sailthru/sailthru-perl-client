@@ -1,5 +1,9 @@
 Revision history for Perl module Sailthru::Client.
 
+2.000 Thu Sep 13 14:57:07
+    - Major refactoring to match other Sailthru libs.
+    - Deprecation of old method calls.
+
 1.002 Wed Aug 8 14:47:23
     - Adding support for UTF8 chars going to the md5_hex function
 
@@ -13,20 +17,20 @@ Revision history for Perl module Sailthru::Client.
     - Updating _flatten_hash to build appropriate html parameter arrays
 
 1.003 Mon Aug  2 11:54:01 2011
-	- Use https to connect to Sailthru API instead of http.
+    - Use https to connect to Sailthru API instead of http.
 
 1.002 Mon Jul 18 14:52:12 2011
-	- Bugfix: don't die when receiving non-200 status code response from Sailthru API.
+    - Bugfix: don't die when receiving non-200 status code response from Sailthru API.
 
 1.001 Wed Apr 27 13:15:38 2011
-	- Fixed tests to take API key and secret as environment variables.
+    - Fixed tests to take API key and secret as environment variables.
 
 1.00 Fri Mar  4 15:57:26 2011
-	- Patch added by David Yee from 20x200. Now supports schedule_time in send method.
+    - Patch added by David Yee from 20x200. Now supports schedule_time in send method.
 
 0.02 Fri Jul  9 15:57:26 2010
-	- Made checking more lenient, added copyTemplate.
+    - Made checking more lenient, added copyTemplate.
 
 0.01 Thu Jul  1 11:57:26 2010
-	- original version; created by h2xs 1.23 with options
-		-XA -n Sailthru
+    - original version; created by h2xs 1.23 with options
+        -XA -n Sailthru

@@ -12,9 +12,9 @@ my ( $api_key, $secret ) = ( $ENV{SAILTHRU_KEY}, $ENV{SAILTHRU_SECRET} );
 
 # resources to use for the test.  These will be automatically created/deleted on Sailthru
 my $t = time;
-Readonly my $LIST     => 'CPAN test list ' .$t;
+Readonly my $LIST     => 'CPAN test list ' . $t;
 Readonly my $EMAIL    => 'sc-cpan@example' . $t . '.com';
-Readonly my $TEMPLATE => 'CPAN Test ' .$t;
+Readonly my $TEMPLATE => 'CPAN Test ' . $t;
 
 # create the Sailthru::Client object
 my $bad_sc = Sailthru::Client->new( 'key', 'secret' );
@@ -98,28 +98,28 @@ SKIP: {
     $email = $sc->api_post( 'list', { list => $LIST } );
     is( $email->{errormsg}, undef, "No error creating list" );
     $email = $sc->api_get( 'list', { list => $LIST } );
-    is( $email->{list},     $LIST,  "email list exists" );
+    is( $email->{list},     $LIST, "email list exists" );
     is( $email->{errormsg}, undef, "No error getting list" );
 
     # add via api calls
     $sc->api_post( 'email', { email => $EMAIL, lists => { $LIST => 1 } } );
     $email = $sc->api_get( 'email', { email => $EMAIL } );
-    is( $email->{lists}{ $LIST }, 1, 'is on list' );
+    is( $email->{lists}{$LIST}, 1, 'is on list' );
 
     # remove via api call
     $sc->api_post( 'email', { email => $EMAIL, lists => { $LIST => 0 } } );
     $email = $sc->api_get( 'email', { email => $EMAIL } );
-    is( $email->{lists}{ $LIST }, undef, 'is not on list' );
+    is( $email->{lists}{$LIST}, undef, 'is not on list' );
 
     # add via set_email/get_email
     $sc->set_email( $EMAIL, {}, { $LIST => 1 } );
     $email = $sc->get_email($EMAIL);
-    is( $email->{lists}{ $LIST }, 1, 'is on list' );
+    is( $email->{lists}{$LIST}, 1, 'is on list' );
 
     # remove via set_email/get_email
     $sc->set_email( $EMAIL, {}, { $LIST => 0 } );
     $email = $sc->get_email($EMAIL);
-    is( $email->{lists}{ $LIST }, undef, 'is not on list' );
+    is( $email->{lists}{$LIST}, undef, 'is not on list' );
 
     $sc->api_delete( 'list', { list => $LIST } );
     $email = $sc->api_get( 'list', { list => $LIST } );

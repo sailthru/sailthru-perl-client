@@ -9,6 +9,7 @@ use LWP::UserAgent;
 use Digest::MD5 qw( md5_hex );
 use Params::Validate qw( :all );
 use Readonly;
+use URI;
 
 our $VERSION = '2.000';
 Readonly my $API_URI => 'https://api.sailthru.com/';
@@ -319,32 +320,32 @@ sub _prepare_json_payload {
 
 sub getEmail {
     my $self = shift;
-    warnings::warnif('deprecated', 'getEmail is deprecated, use get_email instead');
-    $self->get_email(@_);
+    warnings::warnif( 'deprecated', 'getEmail is deprecated, use get_email instead' );
+    return $self->get_email(@_);
 }
 
 sub setEmail {
     my $self = shift;
-    warnings::warnif('deprecated', 'setEmail is deprecated, use set_email instead');
+    warnings::warnif( 'deprecated', 'setEmail is deprecated, use set_email instead' );
     return $self->set_email(@_);
 }
 
 sub getSend {
     my $self = shift;
-    warnings::warnif('deprecated', 'getSend is deprecated, use get_send instead');
-    $self->get_send(@_);
+    warnings::warnif( 'deprecated', 'getSend is deprecated, use get_send instead' );
+    return $self->get_send(@_);
 }
 
 sub scheduleBlast {
     my $self = shift;
-    warnings::warnif('deprecated', 'scheduleBlast is deprecated, use schedule_blast instead');
-    $self->schedule_blast(@_);
+    warnings::warnif( 'deprecated', 'scheduleBlast is deprecated, use schedule_blast instead' );
+    return $self->schedule_blast(@_);
 }
 
 sub getBlast {
     my $self = shift;
-    warnings::warnif('deprecated', 'getBlast is deprecated, use get_blast instead');
-    $self->get_blast(@_);
+    warnings::warnif( 'deprecated', 'getBlast is deprecated, use get_blast instead' );
+    return $self->get_blast(@_);
 }
 
 sub copyTemplate {
@@ -360,7 +361,7 @@ sub copyTemplate {
         { type => HASHREF, default => {} }
     );
     my ( $template, $data_feed, $setup, $subject_line, $schedule_time, $list, $options ) = @_;
-    warnings::warnif('deprecated', 'copyTemplate is deprecated, use schedule_blast_from_template instead');
+    warnings::warnif( 'deprecated', 'copyTemplate is deprecated, use schedule_blast_from_template instead' );
     my $data = $options;
     $data->{copy_template} = $template;
     $data->{data_feed_url} = $data_feed;
@@ -373,9 +374,16 @@ sub copyTemplate {
 
 sub getTemplate {
     my $self = shift;
-    warnings::warnif('deprecated', 'getTemplate is deprecated, use get_template instead');
-    $self->get_template(@_);
+    warnings::warnif( 'deprecated', 'getTemplate is deprecated, use get_template instead' );
+    return $self->get_template(@_);
 }
+
+
+1;
+
+# TODO update documentation
+
+__END__
 
 =head1 NAME
 
@@ -386,7 +394,7 @@ Sailthru::Client - Perl module for accessing Sailthru's API
  use Sailthru::Client;
 
  # Optionally include timeout in seconds as the third parameter.
- $tm = Sailthru::Client->new('api_key','secret');
+ $tm = Sailthru::Client->new('api_key', 'secret');
 
  %vars = (
     name => "Joe Example",
@@ -395,7 +403,7 @@ Sailthru::Client - Perl module for accessing Sailthru's API
  );
  %options = ( reply_to => "your reply_to header");
 
- $tm->send("template_name",'example@example.com',\%vars,\%options);
+ $tm->send("template_name", 'example@example.com', \%vars, \%options);
 
 =head1 DESCRIPTION
 
@@ -504,7 +512,3 @@ it under the same terms as Perl itself, either Perl version 5.10.0 or,
 at your option, any later version of Perl 5 you may have available.
 
 =cut
-
-1;
-
-1;
