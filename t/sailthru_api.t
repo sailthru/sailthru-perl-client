@@ -86,7 +86,7 @@ SKIP: {
     like( $no_template->{errormsg}, qr/template/, 'got expected error message from deleted template' );
 
     ############################################################
-    #test email subscriptions
+    # test email subscriptions
     ############################################################
     my $email;
 
@@ -121,6 +121,21 @@ SKIP: {
     $email = $sc->api_get( 'list', { list => $LIST } );
     is( $email->{name}, undef, 'email list does not exist' );
 
+    ############################################################
+    # TODO test all object methods
+    ############################################################
+
+    # TODO test send
+    # TODO test get_send
+    # TODO test schedule_blast
+    # TODO test schedule_blast_from_template
+    # TODO test get_blast
+    # TODO test get_template
+
+    ############################################################
+    # test deprecated functions
+    ############################################################
+
     # temporarily suppress deprecation warnings
     {
         no warnings 'deprecated';
@@ -132,9 +147,16 @@ SKIP: {
             qr/The contacts API has been discontinued as of August 1st, 2011/,
             'importContacts returns errormsg describing deprecation of "contacts".'
         );
+        # TODO test getEmail
+        # TODO test setEmail
+        # TODO test getSend
+        # TODO test scheduleBlast
+        # TODO test getBlast
+        # TODO test copyTemplate
+        # TODO test getTemplate
     }
-
 }
+
 
 done_testing;
 
