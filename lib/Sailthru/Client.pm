@@ -536,15 +536,13 @@ L<http://docs.sailthru.com/api>
 
 =head1 AUTHOR
 
-Steve Sanbeg
-
 Steve Miketa
 
 Sam Gerstenzang
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (C) 2012 by Steve Sanbeg <stevesanbeg@buzzfeed.com>
+Copyright (C) 2011 by Steve Miketa <steve@sailthru.com>
 
 Adapted from the original SailthruClient & Triggermail modules created by
 Sam Gerstenzang and Steve Miketa
