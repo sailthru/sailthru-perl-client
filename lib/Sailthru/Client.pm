@@ -318,30 +318,51 @@ sub _prepare_json_payload {
 ### DEPRECATED METHODS
 ### XXX
 
+# args:
+# * email - scalar
 sub getEmail {
     my $self = shift;
     warnings::warnif( 'deprecated', 'getEmail is deprecated, use get_email instead' );
     return $self->get_email(@_);
 }
 
+# args:
+# * email - scalar
+# * vars - hashref (optional)
+# * lists - hashref (optional)
+# * templates - hashref (optional)
 sub setEmail {
     my $self = shift;
     warnings::warnif( 'deprecated', 'setEmail is deprecated, use set_email instead' );
     return $self->set_email(@_);
 }
 
+# args:
+# * send_id - scalar
 sub getSend {
     my $self = shift;
     warnings::warnif( 'deprecated', 'getSend is deprecated, use get_send instead' );
     return $self->get_send(@_);
 }
 
+# args:
+# * name - scalar
+# * list - scalar
+# * schedule_time - scalar
+# * from_name - scalar
+# * from_email - scalar
+# * subject - scalar
+# * content_html - scalar
+# * content_text - scalar
+# * options - hashref (optional)
 sub scheduleBlast {
     my $self = shift;
     warnings::warnif( 'deprecated', 'scheduleBlast is deprecated, use schedule_blast instead' );
     return $self->schedule_blast(@_);
 }
 
+# args:
+# * blast_id - scalar
 sub getBlast {
     my $self = shift;
     warnings::warnif( 'deprecated', 'getBlast is deprecated, use get_blast instead' );
@@ -372,12 +393,13 @@ sub copyTemplate {
     return $self->api_post( 'blast', $data );
 }
 
+# args:
+# * template_name - scalar
 sub getTemplate {
     my $self = shift;
     warnings::warnif( 'deprecated', 'getTemplate is deprecated, use get_template instead' );
     return $self->get_template(@_);
 }
-
 
 1;
 
