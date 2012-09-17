@@ -128,6 +128,15 @@ SKIP: {
     $email = $sc->api_get( 'list', { list => $LIST } );
     is( $email->{name}, undef, "email list doesn't exist" );
 
+    # temporarily suppress deprecation warnings
+    {
+        no warnings 'deprecated';
+        # test deprecation of 'contacts' API
+        my $r = $sc->importContacts('foobarbaz@gmail.com', 'foobarbaz');
+        is( $r->{error}, 99, 'importContacts returns error 99 (other).' );
+        like( $r->{errormsg}, qr/The contacts API has been discontinued as of August 1st, 2011/, 'importContacts returns errormsg describing deprecation of "contacts".' );
+    }
+
     ############################################################
 }
 

@@ -401,6 +401,28 @@ sub getTemplate {
     return $self->get_template(@_);
 }
 
+# args:
+# * email - scalar
+# * password - scalar
+# * include_names - scalar (optional)
+sub importContacts {
+    my $self = shift;
+    validate_pos(
+        @_,
+        { type => SCALAR },
+        { type => SCALAR },
+        { type => SCALAR, default => 0 }
+    );
+    my ( $email, $password, $include_names ) = @_;
+    warnings::warnif( 'deprecated', 'importContacts is deprecated. The contacts API has been discontinued as of August 1st, 2011.');
+    my $data = {
+        email         => $email,
+        password      => $password,
+        include_names => $include_names,
+    };
+    return $self->api_post( 'contacts', $data );
+}
+
 1;
 
 # TODO update documentation
