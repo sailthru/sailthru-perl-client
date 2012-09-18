@@ -242,9 +242,9 @@ sub _api_request {
     my $self = shift;
     validate_pos( @_, { type => SCALAR }, { type => HASHREF }, { type => SCALAR } );
     my ( $action, $data, $request_type ) = @_;
-    $data = $self->_prepare_json_payload($data);
+    my $payload    = $self->_prepare_json_payload($data);
     my $action_uri = $API_URI . $action;
-    my $response = $self->_http_request( $action_uri, $data, $request_type );
+    my $response   = $self->_http_request( $action_uri, $payload, $request_type );
     return decode_json( $response->content );
 }
 
