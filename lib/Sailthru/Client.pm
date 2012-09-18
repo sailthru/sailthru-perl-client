@@ -90,8 +90,9 @@ sub _call_api_with_arguments {
 
 sub getEmail {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
-	my ($self, $email) = @_;
-	$self->call_api('POST', 'email', {email=>$email});
+	my $self = shift;
+	my @params = qw(email);
+	$self->_call_api_with_arguments('GET', 'email', \@params, \@_);
 }
 
 sub setEmail {
@@ -110,15 +111,15 @@ sub send {
 
 sub getSend {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
-	my ($self, $id) = @_;
-	$self->call_api('GET', 'send', {send_id=>$id});
+	my $self = shift;
+	my @params = qw(send_id);
+	$self->_call_api_with_arguments('GET', 'send', \@params, \@_);
 }
 
 sub scheduleBlast {
     validate_pos(
         @_,
         { type => HASHREF },
-        { type => SCALAR },
         { type => SCALAR },
         { type => SCALAR },
         { type => SCALAR },
@@ -136,8 +137,9 @@ sub scheduleBlast {
 	
 sub getBlast {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
-	my ($self, $id) = @_;
-	$self->call_api('GET', 'blast', {blast_id=>$id});
+	my $self = shift;
+	my @params = qw(blast_id);
+	$self->_call_api_with_arguments('GET', 'blast', \@params, \@_);
 }
 
 sub copyTemplate {
@@ -160,12 +162,13 @@ sub copyTemplate {
 
 sub getTemplate {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
-	my ($self, $t) = @_;
-	$self->call_api( 'GET', 'template', {template=>$t} );
+	my $self = shift;
+	my @params = qw(template);
+	$self->_call_api_with_arguments('blast', 'template', \@params, \@_);
 }
 
 sub importContacts {
-    validate_pos( @_, { type => HASHREF }, { type => SCALAR }, 0 );
+    validate_pos( @_, { type => HASHREF }, { type => SCALAR }, 0, 0 );
 	my $self = shift;
 	my @params = qw(email password include_names);
 	$self->_call_api_with_arguments('POST', 'contacts', \@params, \@_);
