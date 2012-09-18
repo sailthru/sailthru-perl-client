@@ -4,7 +4,6 @@ use Test::Exception;
 
 use lib 'lib';
 use Sailthru::Client;
-use Data::Dumper;
 use constant API_KEY => 'abcdef1234567890abcdef1234567890';
 
 my $module = Test::MockModule->new('Sailthru::Client');
@@ -38,9 +37,10 @@ copyTemplate
 
 foreach my $method (@wrap) {
 	my %opts = %save_opts = (test=>'arg');
-	lives_ok { $sc->$method(\%opts) } "$method lives";
+	$mock_args = undef;
 
-	#warn Dumper(${mock_args});
+	can_ok ($sc, $method);
+	lives_ok { $sc->$method(\%opts) } "$method lives";
 
 	my $action = $method;
 	$action =~ s/^[a-z]+// if $method =~ m/[A-Z]/;
@@ -49,6 +49,8 @@ foreach my $method (@wrap) {
 	is($mock_args->[1], lc($action), "$method was called");
 	is_deeply(\%opts, \%save_opts, "$method opts weren't overwritten");
 	is($mock_args->[2]{test}, 'arg', "$method option was used");
+
+	$mock_args = undef;
 }
 
 done_testing;
