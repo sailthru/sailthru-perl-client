@@ -2,44 +2,62 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::MockModule;
+use Test::Exception;
 use Readonly;
-
-#
-# test the client functions with the API/network mocked
-#
+use HTTP::Response;
+use URI;
 
 use lib 'lib';
-use_ok('Sailthru::Client');
+use Sailthru::Client;
 
-# TODO mock out so network / http / api calls are not actually made (do this with fixtures?)
+Readonly my $API_KEY => 'abcdef1234567890abcdef1234567890';
 
-# TODO test new
+my $module = Test::MockModule->new('Sailthru::Client');
+# we'll use api_req_args to grab and hold on to the arguments passed in
+my $api_req_args;
+$module->mock(
+    _api_request => sub {
+        my $self = shift;
+        $api_req_args = \@_;
+    }
+);
+$module->mock(
+    validate_pos => sub(\@@) {
+        # do nothing
+        # don't validate because we loop over methods with different argument signatures
+        return;
+    }
+);
 
-# TODO test helper _prepare_json_payload
+my $sc = Sailthru::Client->new( $API_KEY, '00001111222233334444555566667777' );
+isa_ok( $sc, 'Sailthru::Client' );
 
-# TODO test send
-# TODO test get_send
-# TODO test get_email
-# TODO test set_email
-# TODO test schedule_blast
-# TODO test schedule_blast_from_template
-# TODO test get_blast
-# TODO test get_template
-# TODO test api_get
-# TODO test api_post
-# TODO test api_delete
-
-# temporarily suppress deprecation warnings
-{
-    no warnings 'deprecated';
-    # TODO test getEmail
-    # TODO test setEmail
-    # TODO test getSend
-    # TODO test scheduleBlast
-    # TODO test getBlast
-    # TODO test copyTemplate
-    # TODO test getTemplate
-    # TODO test importContacts
+my %api_methods = (
+    send                         => [ 'POST', 'send' ],
+    get_send                     => [ 'GET',  'send' ],
+    get_email                    => [ 'GET',  'email' ],
+    set_email                    => [ 'POST', 'email' ],
+    schedule_blast               => [ 'POST', 'blast' ],
+    schedule_blast_from_template => [ 'POST', 'blast' ],
+    get_blast                    => [ 'GET',  'blast' ],
+    get_template                 => [ 'GET',  'template' ],
+);
+for my $method ( keys %api_methods ) {
+    my $req_type = $api_methods{$method}->[0];
+    my $action   = $api_methods{$method}->[1];
+    my %opts     = my %save_opts = ( test => 'arg' );
+    # clear saved args from mock
+    $api_req_args = undef;
+    # is the method in the module?
+    can_ok( $sc, $method );
+    lives_ok( sub { $sc->$method( \%opts ) }, "$method lives" );
+    # see if right API action was accessed
+    is( $api_req_args->[0], $action, "$method: api '$action' was called" );
+    # make sure the http request verb matches
+    is( $api_req_args->[2], $req_type, "$method: request type $req_type was called" );
+    # make sure the argument hash that was passed in wasn't munged
+    is_deeply( \%opts, \%save_opts, "$method opts weren't overwritten" );
 }
 
 done_testing;

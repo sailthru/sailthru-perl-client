@@ -125,12 +125,18 @@ SKIP: {
     # TODO test all object methods
     ############################################################
 
-    # TODO test send
-    # TODO test get_send
+    # TODO just check some template metadata
+    # TODO test get_template
+
+    # TODO schedule blasts, check that they exist, delete blasts
     # TODO test schedule_blast
+    # TODO schedule blasts, check that they exist, delete blasts
     # TODO test schedule_blast_from_template
     # TODO test get_blast
-    # TODO test get_template
+
+    # TODO schedule blasts, check that they exist, delete blasts
+    # TODO test send
+    # TODO test get_send
 
     ############################################################
     # test deprecated functions
