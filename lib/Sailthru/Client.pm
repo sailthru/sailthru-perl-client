@@ -28,41 +28,13 @@ Readonly my $API_URI => 'https://api.sailthru.com/';
 # * now generate your URL-encoded query string from your parameters plus sig
 
 # args:
-# * params
-sub extract_param_values {
-    my ($params) = @_;
-    my $values = [];
-    # hashref
-    if ( ref $params eq ref {} ) {
-        for my $v ( values %{$params} ) {
-            push @{$values}, @{ extract_param_values($v) };
-        }
-		for my $k ( keys %{$params} ) {
-			warn "Obsolete encoding detected -- use JSON!!!!"  unless $k =~ m/^(?:api_key|format|json)$/;
-		}
-    }
-    # arrayref
-    elsif ( ref $params eq ref [] ) {
-        for my $v ( @{$params} ) {
-            push @{$values}, @{ extract_param_values($v) };
-        }
-		warn "Obsolete encoding detected -- use JSON!!!!"
-    }
-    # value
-    else {
-        push @{$values}, $params;
-    }
-    return $values;
-}
-
-# args:
 # * params - hashref
 # * secret - scalar
 sub get_signature_string {
     validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
     my ( $params, $secret ) = @_;
-    my $param_values = extract_param_values($params);
-    return join '', $secret, sort @{$param_values};
+    my @param_values = values %{$params};
+    return join '', $secret, sort @param_values;
 }
 
 # args:
