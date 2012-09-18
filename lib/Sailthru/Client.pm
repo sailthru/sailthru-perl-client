@@ -37,12 +37,16 @@ sub extract_param_values {
         for my $v ( values %{$params} ) {
             push @{$values}, @{ extract_param_values($v) };
         }
+		for my $k ( keys %{$params} ) {
+			warn "Obsolete encoding detected -- use JSON!!!!"  unless $k =~ m/^(?:api_key|format|json)$/;
+		}
     }
     # arrayref
     elsif ( ref $params eq ref [] ) {
         for my $v ( @{$params} ) {
             push @{$values}, @{ extract_param_values($v) };
         }
+		warn "Obsolete encoding detected -- use JSON!!!!"
     }
     # value
     else {
