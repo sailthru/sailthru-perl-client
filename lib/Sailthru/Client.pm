@@ -151,7 +151,6 @@ sub copyTemplate {
         { type => SCALAR },
         { type => SCALAR },
         { type => SCALAR },
-        { type => SCALAR },
         0
     );
 

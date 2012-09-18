@@ -33,6 +33,7 @@ scheduleBlast
 getBlast
 getTemplate
 importContacts
+copyTemplate
 ];
 
 foreach my $method (@wrap) {
@@ -43,6 +44,8 @@ foreach my $method (@wrap) {
 
 	my $action = $method;
 	$action =~ s/^[a-z]+// if $method =~ m/[A-Z]/;
+	$action = 'blast' if $method eq 'copyTemplate'; #one special case
+
 	is($mock_args->[1], lc($action), "$method was called");
 	is_deeply(\%opts, \%save_opts, "$method opts weren't overwritten");
 	is($mock_args->[2]{test}, 'arg', "$method option was used");
