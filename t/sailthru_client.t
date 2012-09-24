@@ -44,6 +44,14 @@ my %api_methods = (
     schedule_blast_from_template => [ 'POST', 'blast' ],
     get_blast                    => [ 'GET',  'blast' ],
     get_template                 => [ 'GET',  'template' ],
+
+    getSend                      => [ 'GET',  'send' ],
+    getEmail                     => [ 'GET',  'email' ],
+    setEmail                     => [ 'POST', 'email' ],
+    scheduleBlast                => [ 'POST', 'blast' ],
+    copyTemplate                 => [ 'POST', 'blast' ],
+    getBlast                     => [ 'GET',  'blast' ],
+    getTemplate                  => [ 'GET',  'template' ],
 );
 for my $method ( keys %api_methods ) {
     my $req_type = $api_methods{$method}->[0];
