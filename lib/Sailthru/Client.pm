@@ -720,7 +720,7 @@ Sam Gerstenzang
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (C) 2012 by Finn Smith <finn@timeghost.net
+Copyright (C) 2012 by Finn Smith <finn@timeghost.net>
 
 Copyright (C) 2012 by Steve Sanbeg <stevesanbeg@buzzfeed.com>
 
