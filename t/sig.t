@@ -25,7 +25,7 @@ my $args = {
     api_key       => $api_key,
 };
 
-$sig = Sailthru::Client::get_signature_hash( $args, $secret );
+$sig = $sc->_get_signature_hash( $args, $secret );
 is( $sig, 'b0c1ba5e661d155a940da08ed240cfb9', 'get_signature_hash with multiple arguments' );
 
 $args = {
@@ -34,7 +34,7 @@ $args = {
     json    => encode_json( { email => 'stevesanbeg@buzzfeed.com', lists => { Test => 1 } } ),
 };
 
-$sig = Sailthru::Client::get_signature_hash( $args, $secret );
+$sig = $sc->_get_signature_hash( $args, $secret );
 is( $sig, '62c9f19c053146634d94d531e2492438', 'get_signature_hash with JSON' );
 
 # data for testing extraction and signature hash functions
@@ -50,10 +50,5 @@ my $simple_args = {
     json    => $simple_json
 };
 my @simple_values = sort 'foobarbaz', 'json', $simple_json;
-
-# test signature_string
-my $expected = $secret . join '', @simple_values;
-my $signature_string = Sailthru::Client::get_signature_string( $simple_args, $secret );
-is( $signature_string, $expected, 'get_signature_string from hash' );
 
 done_testing;

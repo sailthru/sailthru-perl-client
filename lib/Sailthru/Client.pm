@@ -14,47 +14,20 @@ use URI;
 our $VERSION = '2.000';
 Readonly my $API_URI => 'https://api.sailthru.com/';
 
-#
-# helpers
-#
-
-# Every request must also generate a signature hash called sig according to the
-# following rules:
-#
-# * take the string values of every parameter, including api_key
-# * sort the values alphabetically, case-sensitively (i.e. ordered by Unicode code point)
-# * concatenate the sorted values, and prepend this string with your shared secret
-# * generate an MD5 hash of this string and use this as sig
-# * now generate your URL-encoded query string from your parameters plus sig
-
-# args:
-# * params - hashref
-# * secret - scalar
-sub get_signature_string {
-    validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
-    my ( $params, $secret ) = @_;
-    my @param_values = values %{$params};
-    return join '', $secret, sort @param_values;
-}
-
-# args:
-# * params - hashref
-# * secret - scalar
-sub get_signature_hash {
-    validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
-    my ( $params, $secret ) = @_;
-    # assumes utf8 encoded text, works fine because we use encode_json internally
-    return md5_hex( get_signature_string( $params, $secret ) );
-}
 
 #
 # public api
 #
 
+# args:
+#
+# * api_key - scalar
+# * secret - scalar
+# * timeout - scalar (optional)
 sub new {
-    my ( $class, $key, $secret, $timeout ) = @_;
+    my ( $class, $api_key, $secret, $timeout ) = @_;
     my $self = {
-        api_key => $key,
+        api_key => $api_key,
         secret  => $secret,
         ua      => LWP::UserAgent->new,
     };
@@ -65,7 +38,7 @@ sub new {
 
 # args:
 #
-# * template - scalar
+# * template_name - scalar
 # * email - scalar
 # * vars - hashref (optional)
 # * options - hashref (optional)
@@ -80,9 +53,9 @@ sub send {
         { type => HASHREF, default => {} },
         { type => SCALAR, default => undef }
     );
-    my ( $template, $email, $vars, $options, $schedule_time ) = @_;
+    my ( $template_name, $email, $vars, $options, $schedule_time ) = @_;
     my $data = {};
-    $data->{template}      = $template;
+    $data->{template}      = $template_name;
     $data->{email}         = $email;
     $data->{vars}          = $vars if keys %{$vars};
     $data->{options}       = $options if keys %{$options};
@@ -169,16 +142,16 @@ sub schedule_blast {
 }
 
 # args:
-# * template - scalar
+# * template_name - scalar
 # * list - scalar
 # * schedule_time - scalar
 # * options - hashref (optional)
 sub schedule_blast_from_template {
     my $self = shift;
     validate_pos( @_, { type => SCALAR }, { type => SCALAR }, { type => SCALAR }, { type => HASHREF, default => {} }, );
-    my ( $template, $list, $schedule_time, $options ) = @_;
+    my ( $template_name, $list, $schedule_time, $options ) = @_;
     my $data = $options;
-    $data->{copy_template} = $template;
+    $data->{copy_template} = $template_name;
     $data->{list}          = $list;
     $data->{schedule_time} = $schedule_time;
     return $self->api_post( 'blast', $data );
@@ -234,6 +207,10 @@ sub api_delete {
     return $self->_api_request( $action, $data, 'DELETE' );
 }
 
+#
+# private helper methods
+#
+
 # args:
 # * action - scalar
 # * data - hashref
@@ -286,8 +263,32 @@ sub _prepare_json_payload {
     $payload->{format}  = 'json';
     # this gives us nice clean utf8 encoded json text
     $payload->{json} = encode_json($data);
-    $payload->{sig} = get_signature_hash( $payload, $self->{secret} );
+    $payload->{sig} = $self->_get_signature_hash( $payload, $self->{secret} );
     return $payload;
+}
+
+# Every request must also generate a signature hash called sig according to the
+# following rules:
+#
+# * take the string values of every parameter, including api_key
+# * sort the values alphabetically, case-sensitively (i.e. ordered by Unicode code point)
+# * concatenate the sorted values, and prepend this string with your shared secret
+# * generate an MD5 hash of this string and use this as sig
+# * now generate your URL-encoded query string from your parameters plus sig
+
+# args:
+# * params - hashref
+# * secret - scalar
+# NOTE This internal method assumes a single level hash with values for only 'api_key', 'format', and 'json'
+# NOTE Since we pack everything into the 'json' value this is safe and we do not need to recurse down a nested hash.
+sub _get_signature_hash {
+    my $self = shift;
+    validate_pos( @_, { type => HASHREF }, { type => SCALAR } );
+    my ( $params, $secret ) = @_;
+    my @param_values = values %{$params};
+    my $sig_string = join '', $secret, sort @param_values;
+    # assumes utf8 encoded text, works fine because we use encode_json internally
+    return md5_hex( $sig_string );
 }
 
 ### XXX
@@ -397,8 +398,6 @@ sub importContacts {
 
 1;
 
-# TODO update documentation
-
 __END__
 
 =head1 NAME
@@ -407,100 +406,299 @@ Sailthru::Client - Perl module for accessing Sailthru's API
 
 =head1 SYNOPSIS
 
- use Sailthru::Client;
+    use Sailthru::Client;
 
- # Optionally include timeout in seconds as the third parameter.
- $tm = Sailthru::Client->new('api_key', 'secret');
+    # instantiate a new Sailthru::Client with an api_key and secret
+    $sc = Sailthru::Client->new('api_key', 'secret');
 
- %vars = (
-    name => "Joe Example",
-    from_email => "approved_email@your_domain.com",
-    your_variable => "some_value"
- );
- %options = ( reply_to => "your reply_to header");
-
- $tm->send("template_name", 'example@example.com', \%vars, \%options);
+    # send an email to a single email address
+    %vars = (
+       name => "Joe Example",
+       from_email => "approved_email@your_domain.com",
+       your_variable => "some_value"
+    );
+    %options = ( reply_to => "your reply_to header");
+    $sc->send('template_name', 'example@example.com', \%vars, \%options);
 
 =head1 DESCRIPTION
 
 Sailthru::Client is a Perl module for accessing the Sailthru API.
 
-All methods return a hash with return values. Dump the hash or explore the
-Sailthru API documentation page for what might be returned.
+Methods return a reference to a hash containing the response values. Dump the
+hash or read the Sailthru API documentation for which values are returned
+by which API calls.
 
 L<http://docs.sailthru.com/api>
 
-Some options might change. Always consult the Sailthru API documentation for the best information.
+Some options might change. Consult the Sailthru API documentation for
+the latest information.
 
-=head2 METHODS
+=head1 METHODS
 
-=over 4
+=head2 Sailthru::Client->new( $api_key, $secret, [$timeout] )
 
-=item B<call_api>( I<METHOD>, I<ACTION>, I<ARGUMENTS> )
-
-This is the generic method to call the API; the specific methods are
-implemented using this method, which can also be used to directly call APIs.
-
-I<METHOD> is typically C<GET> or C<POST>.  I<ACTION> is the name of the API
-to call.  I<ARGUMENTS> specifies the arguments to pass to the API; this
-should be an expanded has that can be converted to JSON (although if a
-scalar is passed in, it will be assumed to already be JSON).
-
-For example, you could get information about an email with
-
- $sc->call_api('GET', 'email', {email=>'somebody@example.com'});
-
-=item B<getEmail>( I<$email> )
-
-=item B<setEmail>( $email, \%vars, \%lists, \%templates )
-
-Takes email as string. vars, lists, templates as hash references.  The vars
-hash you choose your own key/values for later substitution.  The lists hash
-should be of format list_name => 1 for subscribed, 0 for unsubscribed.  The
-templates hash is a list of templates user has opted out, use the key as the
-template name to signal opt-out.
-
-=item B<send>( $template, $email, \%vars, \%options, $schedule_time )
-
-Send an email to a single address.
-Takes template, email and schedule_time as strings. vars, options as hash references.
-
-Options:
+Returns a new Sailthru::Client object.
 
 =over
 
-=item I<replyto>
+=item $api_key
 
-override Reply-To header
+Sailthru API key.
 
-=item I<test>
+=item $secret
 
-send as test email (subject line will be marked, will not count towards stats)
+Sailthru API secret.
+
+=item $timeout
+
+Optional network timeout in seconds.
 
 =back
 
-=item B<getSend>( $send_id )
+=head2 $sc->send( $template_name, $email, [\%vars, \%options, $schedule_time] )
 
-Check if send worked, using send_id returned in the hash from send()
+Remotely send an email template to a single email address.
 
-=item B<scheduleBlast>( $name, $list, $schedule_time, $from_name, $from_email, $subject, $content_html, $content_text, \%options )
+API docs: L<http://docs.sailthru.com/api/send>
 
-Schedule an email blast. See the API documentation for more details on what should be passed.
+=over
 
-L<http://docs.sailthru.com/api/blast>
+=item $template_name
 
-=item B<getBlast>( I<$blast_id> )
+The name of the template to send.
 
-Check if blast worked, using blast_id returned in the hash from scheduleBlast()
-Takes I<blast_id>.
+=item $email
 
-=item B<copyTemplate>( $template_name, $data_feed, $setup, $subject_line, $schedule_time, $list, \%options )
+The email address to send to.
 
-Allows you to use an existing template to send out a blast.
+=item \%vars
 
-=item B<getTemplate>( $template_name )
+An optional hashref of the replacement vars to use in the send. Each var may be referenced as {varname} within the template itself.
 
-Retrieves information about the specified template
+=item \%options
+
+An optional hashref to include a replyto header, test keys, etc. See the API documentation for details.
+
+=item $schedule_time
+
+Do not send the email immediately, but at some point in the future. Any date recognized by PHP's strtotime function is valid, but be sure to specify timezone or use a UTC time to avoid confusion. You may also use relative time.
+
+=back
+
+=head2 $sc->get_send( $send_id )
+
+Get the status of a send.
+
+API docs: L<http://docs.sailthru.com/api/send>
+
+=over
+
+=item $send_id
+
+The unique identifier of the send returned in the response from C<$sc-E<gt>send()>.
+
+=back
+
+=head2 $sc->get_email( $email )
+
+Get information about a user.
+
+API docs: L<http://docs.sailthru.com/api/email>
+
+=over
+
+=item $email
+
+The email address to look up.
+
+=back
+
+=head2 $sc->set_email( $email, [\%vars, \%lists, \%templates] )
+
+Update information about a user, including adding and removing the user from lists.
+
+API docs: L<http://docs.sailthru.com/api/email>
+
+=over
+
+=item $email
+
+The email address to modify.
+
+=item \%vars
+
+An optional hashref of replacement variables you want to set or a JSON string
+
+=item \%lists
+
+An optional hashref. Each key is the name of a list and each value is
+1 to subscribe the user to that list or 0 to remove the user from the list.
+
+=item \%templates
+
+An optional hashref. Each key is the name of a template, and each value is 1 to
+opt the user back in to template delivery or 0 to opt the user out of template
+delivery.
+
+=back
+
+=head2 $sc->schedule_blast( $name, $list, $schedule_time, $from_name, $from_email, $subject, $content_html, $content_text, [\%options] )
+
+Schedule a mass mail blast.
+
+API docs: L<http://docs.sailthru.com/api/blast>
+
+=over
+
+=item $name
+
+The name to give to this new blast.
+
+=item $list
+
+The mailing list name to send to.
+
+=item $schedule_time
+
+When the blast should send. Dates in the past will be scheduled for immediate
+delivery. Any English textual datetime format known to PHP's strtotime function
+is acceptable, such as 2012-03-18 23:57:22 UTC, now (immediate delivery), +3
+hours (3 hours from now), or March 18, 9:30 EST. Be sure to specify a timezone
+if you use an exact time.
+
+=item $from_name
+
+The name appearing in the "From" of the email.
+
+=item $from_email
+
+The email address to use as the "From" – choose from any of your verified emails.
+
+=item $subject
+
+The subject line of the email.
+
+=item $content_html
+
+The HTML format version of the email.
+
+=item $content_text
+
+The text format version of the email.
+
+=item \%options
+
+An optional hashref containing the optional parameters for a blast. See the API documentation for details.
+
+=back
+
+=head2 $sc->schedule_blast_from_template( $template_name, $list, $schedule_time, [\%options] )
+
+Schedule a mass mail blast from a template.
+
+API docs: L<http://docs.sailthru.com/api/blast>
+
+=over
+
+=item $template_name
+
+The template to copy from.
+
+=item $list
+
+The mailing list name to send to.
+
+=item $schedule_time
+
+When the blast should send. Dates in the past will be scheduled for immediate
+delivery. Any English textual datetime format known to PHP's strtotime function
+is acceptable, such as 2012-03-18 23:57:22 UTC, now (immediate delivery), +3
+hours (3 hours from now), or March 18, 9:30 EST. Be sure to specify a timezone
+if you use an exact time.
+
+=item \%options
+
+An optional hashref containing the optional parameters for a blast. See the API documentation for details.
+
+=back
+
+=head2 $sc->get_blast( $blast_id )
+
+Get data on a single blast.
+
+API docs: L<http://docs.sailthru.com/api/blast>
+
+=over
+
+=item $blast_id
+
+The blast id returned in the response from C<$sc-E<gt>scheduleBlast()>.
+
+=back
+
+=head2 $sc->get_template( $template_name )
+
+Get information about a template
+
+API docs: L<http://docs.sailthru.com/api/template>
+
+=over
+
+=item $template_name
+
+The name of the template.
+
+=back
+
+=head2 $sc->api_get( $action, \%data )
+
+This is a generic GET call to the API.
+
+=over
+
+=item $action
+
+The name of the API action to call.
+
+=item \%data
+
+A hashref of arguments to pass to the API.
+
+=back
+
+For example, you could get information about an email with
+
+ $sc->api_get('GET', 'email', {email=>'somebody@example.com'});
+
+=head2 $sc->api_post( $action, \%data )
+
+This is a generic POST call to the API.
+
+=over
+
+=item $action
+
+The name of the API action to call.
+
+=item \%data
+
+A hashref of arguments to pass to the API.
+
+=back
+
+=head2 $sc->api_delete( $action, \%data )
+
+This is a generic DELETE call to the API.
+
+=over
+
+=item $action
+
+The name of the API action to call.
+
+=item \%data
+
+A hashref of arguments to pass to the API.
 
 =back
 
@@ -512,19 +710,27 @@ L<http://docs.sailthru.com/api>
 
 =head1 AUTHOR
 
+Finn Smith
+
+Steve Sanbeg
+
 Steve Miketa
 
 Sam Gerstenzang
 
 =head1 LICENSE AND COPYRIGHT
 
+Copyright (C) 2012 by Finn Smith <finn@timeghost.net
+
+Copyright (C) 2012 by Steve Sanbeg <stevesanbeg@buzzfeed.com>
+
 Copyright (C) 2011 by Steve Miketa <steve@sailthru.com>
 
-Adapted from the original SailthruClient & Triggermail modules created by
-Sam Gerstenzang and Steve Miketa
+Adapted from the original Sailthru::Client & Triggermail modules created by Sam
+Gerstenzang and Steve Miketa.
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.10.0 or,
-at your option, any later version of Perl 5 you may have available.
+This library is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself, either Perl version 5.10.0 or, at your option,
+any later version of Perl 5 you may have available.
 
 =cut
