@@ -24,9 +24,11 @@ $module->mock(
 );
 $module->mock(
     validate_pos => sub(\@@) {
-        # do nothing
-        # don't validate because we loop over methods with different argument signatures
-        return;
+		my $p = shift;
+		if (@$p == 1) {
+			#only one real arg = fake list for wrapper. pad with dummy args
+			unshift @$p, {} for 1..$#_;
+		}
     }
 );
 
@@ -56,6 +58,9 @@ for my $method ( keys %api_methods ) {
     is( $api_req_args->[0], $action, "$method: api '$action' was called" );
     # make sure the http request verb matches
     is( $api_req_args->[2], $req_type, "$method: request type $req_type was called" );
+
+	is($api_req_args->[1]{test}, 'arg', "$method option was used");
+
     # make sure the argument hash that was passed in wasn't munged
     is_deeply( \%opts, \%save_opts, "$method opts weren't overwritten" );
 }
