@@ -652,7 +652,7 @@ The name of the template.
 
 =head2 $sc->api_get( $action, \%data )
 
-This is a generic GET call to the API.
+This is a generic HTTP GET call to the API.
 
 =over
 
@@ -672,7 +672,7 @@ For example, you could get information about an email with
 
 =head2 $sc->api_post( $action, \%data )
 
-This is a generic POST call to the API.
+This is a generic HTTP POST call to the API.
 
 =over
 
@@ -688,7 +688,7 @@ A hashref of arguments to pass to the API.
 
 =head2 $sc->api_delete( $action, \%data )
 
-This is a generic DELETE call to the API.
+This is a generic HTTP DELETE call to the API.
 
 =over
 
