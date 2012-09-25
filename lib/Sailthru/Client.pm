@@ -129,7 +129,8 @@ sub schedule_blast {
         { type => HASHREF, default => {} },
     );
     my ( $name, $list, $schedule_time, $from_name, $from_email, $subject, $content_html, $content_text, $options ) = @_;
-    my $data = $options;
+    # initialize our data hash by copying the contents of the options hash
+    my $data = {%{$options}};
     $data->{name}          = $name;
     $data->{list}          = $list;
     $data->{schedule_time} = $schedule_time;
@@ -150,7 +151,8 @@ sub schedule_blast_from_template {
     my $self = shift;
     validate_pos( @_, { type => SCALAR }, { type => SCALAR }, { type => SCALAR }, { type => HASHREF, default => {} }, );
     my ( $template_name, $list, $schedule_time, $options ) = @_;
-    my $data = $options;
+    # initialize our data hash by copying the contents of the options hash
+    my $data = {%{$options}};
     $data->{copy_template} = $template_name;
     $data->{list}          = $list;
     $data->{schedule_time} = $schedule_time;
@@ -360,7 +362,8 @@ sub copyTemplate {
     );
     my ( $template, $data_feed, $setup, $subject_line, $schedule_time, $list, $options ) = @_;
     warnings::warnif( 'deprecated', 'copyTemplate is deprecated, use schedule_blast_from_template instead' );
-    my $data = $options;
+    # initialize our data hash by copying the contents of the options hash
+    my $data = {%{$options}};
     $data->{copy_template} = $template;
     $data->{data_feed_url} = $data_feed;
     $data->{setup}         = $setup;
@@ -568,11 +571,11 @@ if you use an exact time.
 
 =item $from_name
 
-The name appearing in the "From" of the email.
+The name to use in "From" in the email.
 
 =item $from_email
 
-The email address to use as the "From" – choose from any of your verified emails.
+The email address to use in "From". Choose from any of your verified emails.
 
 =item $subject
 
