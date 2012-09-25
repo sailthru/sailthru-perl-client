@@ -14,7 +14,6 @@ use URI;
 our $VERSION = '2.000';
 Readonly my $API_URI => 'https://api.sailthru.com/';
 
-
 #
 # public api
 #
@@ -130,7 +129,7 @@ sub schedule_blast {
     );
     my ( $name, $list, $schedule_time, $from_name, $from_email, $subject, $content_html, $content_text, $options ) = @_;
     # initialize our data hash by copying the contents of the options hash
-    my $data = {%{$options}};
+    my $data = { %{$options} };
     $data->{name}          = $name;
     $data->{list}          = $list;
     $data->{schedule_time} = $schedule_time;
@@ -152,7 +151,7 @@ sub schedule_blast_from_template {
     validate_pos( @_, { type => SCALAR }, { type => SCALAR }, { type => SCALAR }, { type => HASHREF, default => {} }, );
     my ( $template_name, $list, $schedule_time, $options ) = @_;
     # initialize our data hash by copying the contents of the options hash
-    my $data = {%{$options}};
+    my $data = { %{$options} };
     $data->{copy_template} = $template_name;
     $data->{list}          = $list;
     $data->{schedule_time} = $schedule_time;
@@ -290,7 +289,7 @@ sub _get_signature_hash {
     my @param_values = values %{$params};
     my $sig_string = join '', $secret, sort @param_values;
     # assumes utf8 encoded text, works fine because we use encode_json internally
-    return md5_hex( $sig_string );
+    return md5_hex($sig_string);
 }
 
 ### XXX
@@ -363,7 +362,7 @@ sub copyTemplate {
     my ( $template, $data_feed, $setup, $subject_line, $schedule_time, $list, $options ) = @_;
     warnings::warnif( 'deprecated', 'copyTemplate is deprecated, use schedule_blast_from_template instead' );
     # initialize our data hash by copying the contents of the options hash
-    my $data = {%{$options}};
+    my $data = { %{$options} };
     $data->{copy_template} = $template;
     $data->{data_feed_url} = $data_feed;
     $data->{setup}         = $setup;
