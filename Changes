@@ -3,6 +3,7 @@ Revision history for Perl module Sailthru::Client.
 2.000 Thu Sep 13 14:57:07
     - Major refactoring to match other Sailthru libs.
     - Deprecation of old method calls.
+    - Increased and improved test coverage.
 
 1.002 Wed Aug 8 14:47:23
     - Adding support for UTF8 chars going to the md5_hex function
