@@ -5,4 +5,3 @@ MANIFEST			This list of files
 README
 t/sailthru_client.t
 t/sig.t
-t/buzzfeed.t
