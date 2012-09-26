@@ -1,5 +1,4 @@
 Sailthru::Client
-===========
 
 DOCUMENTATION
 
@@ -18,16 +17,19 @@ DEPENDENCIES
 
 This module requires these other modules and libraries:
 
-Encode
 Digest::MD5
-HTTP::Request
 JSON::XS
-LWP
 LWP::Protocol::https
+LWP::UserAgent
 Params::Validate
-URI::Escape
+Readonly
+URI
 
 COPYRIGHT AND LICENSE
+
+Copyright (C) 2012 by Finn Smith <finn@timeghost.net>
+
+Copyright (C) 2012 by Steve Sanbeg <stevesanbeg@buzzfeed.com>
 
 Copyright (C) 2011 by Steve Miketa <steve@sailthru.com>
 
