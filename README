@@ -24,6 +24,7 @@ LWP::UserAgent
 Params::Validate
 Readonly
 URI
+Test::MockModule
 
 COPYRIGHT AND LICENSE
 
