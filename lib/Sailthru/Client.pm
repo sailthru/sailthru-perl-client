@@ -11,7 +11,7 @@ use Params::Validate qw( :all );
 use Readonly;
 use URI;
 
-our $VERSION = '2.001';
+our $VERSION = '2.002';
 Readonly my $API_URI => 'https://api.sailthru.com/';
 
 #
