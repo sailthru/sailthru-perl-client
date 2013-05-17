@@ -25,6 +25,7 @@ Params::Validate
 Readonly
 URI
 Test::MockModule
+Test::Exception
 
 COPYRIGHT AND LICENSE
 
