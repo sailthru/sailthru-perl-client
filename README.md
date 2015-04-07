@@ -1,8 +1,8 @@
-Sailthru::Client
+sailthru-perl-client
+====================
 
-DOCUMENTATION
-
-http://getstarted.sailthru.com/new-for-developers-overview/api-client-library/perl
+For a download please visit:
+[http://getstarted.sailthru.com/new-for-developers-overview/api-client-library/perl](http://getstarted.sailthru.com/new-for-developers-overview/api-client-library/perl)
 
 INSTALLATION
 
