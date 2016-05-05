@@ -11,7 +11,7 @@ use Params::Validate qw( :all );
 use Readonly;
 use URI;
 
-our $VERSION = '2.002';
+our $VERSION = '2.1.0';
 Readonly my $API_URI => 'https://api.sailthru.com/';
 
 #
@@ -29,6 +29,7 @@ sub new {
         api_key => $api_key,
         secret  => $secret,
         ua      => LWP::UserAgent->new,
+        last_rate_limit_info_ref => {}
     };
     $self->{ua}->timeout($timeout) if $timeout;
     $self->{ua}->default_header( 'User-Agent' => "Sailthru API Perl Client $VERSION" );
@@ -215,6 +216,27 @@ sub api_delete {
     return $self->_api_request( $action, $data, 'DELETE' );
 }
 
+# args:
+#
+# * action - scalar
+# * method - scalar
+sub get_last_rate_limit_info {
+    my $self   = shift;
+    my @params = validate_pos(
+        @_,
+        { type => SCALAR },
+        { type => SCALAR }
+    );
+    my ( $action, $method ) = @params;
+    $method = uc($method);
+
+    if (exists $self->{last_rate_limit_info_ref}->{$action} and $self->{last_rate_limit_info_ref}->{$action}->{$method}) {
+        return $self->{last_rate_limit_info_ref}->{$action}->{$method};
+    }
+
+    return;
+}
+
 #
 # private helper methods
 #
@@ -230,6 +252,18 @@ sub _api_request {
     my $payload    = $self->_prepare_json_payload($data);
     my $action_uri = $API_URI . $action;
     my $response   = $self->_http_request( $action_uri, $payload, $request_type );
+
+    # update rate limit information
+    if ( defined $response->header('x-rate-limit-limit') and
+         defined $response->header('x-rate-limit-remaining') and
+         defined $response->header('x-rate-limit-reset') ) {
+         $self->{last_rate_limit_info_ref}->{$action}->{$request_type} = {
+             limit => $response->header('x-rate-limit-limit'),
+             remaining => $response->header('x-rate-limit-remaining'),
+             reset => $response->header('x-rate-limit-reset')
+         };
+    }
+
     return decode_json( $response->content );
 }
 
@@ -708,6 +742,26 @@ The name of the API action to call.
 =item \%data
 
 A hashref of arguments to pass to the API.
+
+=back
+
+=head2 $sc->get_last_rate_limit_info( $action, $method )
+
+Get the last rate limit information .
+
+=over
+
+=item $action
+
+The name of the API action to call.
+
+=item $method
+
+Http request type. One of GET, POST or DELETE.
+
+=item return
+
+Hash reference with three fields (limit, remaining and reset) or undef if not exists.
 
 =back
 
