@@ -1,7 +1,9 @@
 Revision history for Perl module Sailthru::Client.
 
-2.1.0 Wed May 4th 2016
+2.3.0 Wed May 4th 2016
     - Added support to get Rate Limiting information
+
+# skip 2.1.0 and 2.2.0 to walk around CPAN release number check
 
 2.0.0 Thu Sep 13 14:57:07 2012
     - Major refactoring to match other Sailthru libs.
