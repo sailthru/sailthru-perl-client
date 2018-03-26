@@ -4,7 +4,7 @@ sailthru-perl-client
 For a download please visit:
 [http://getstarted.sailthru.com/new-for-developers-overview/api-client-library/perl](http://getstarted.sailthru.com/new-for-developers-overview/api-client-library/perl)
 
-####INSTALLATION
+#### Installation
 
 To install this module type the following:
 ```bash
@@ -13,7 +13,7 @@ To install this module type the following:
    make test
    make install
 ```
-####DEPENDENCIES
+#### Dependencies
 
 This module requires these other modules and libraries:
 ```perl
@@ -28,7 +28,7 @@ Test::MockModule
 Test::Exception
 ```
 
-####API Rate Limiting
+#### API Rate Limiting
 Here is an example how to check rate limiting and throttle API calls based on that. For more information about Rate Limiting, see [Sailthru Documentation](https://getstarted.sailthru.com/new-for-developers-overview/api/api-technical-details/#Rate_Limiting)
 
 
@@ -54,9 +54,9 @@ if (defined $rate_limit_info) {
 }
 ```
 
-####COPYRIGHT AND LICENSE
+#### Copyright and License
 
-Copyright (c) 2016 Sailthru, Inc., https://www.sailthru.com/
+Copyright (c) 2018 Sailthru, Inc., https://www.sailthru.com/
 
 Adapted from the original Triggermail module created by Sam Gerstenzang.
 
